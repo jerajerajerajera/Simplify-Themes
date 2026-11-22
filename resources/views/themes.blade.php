@@ -390,9 +390,10 @@
 
     @script
     <script>
-        // Which tab and mode the editor shows, kept outside the component: when Livewire draws the page again after an
-        // upload, the editor stays where it was (TH-B13). A new visit to the page starts on Themes again.
-        if (window.simplifyThemesView?.id !== $wire.$id) window.simplifyThemesView = { id: $wire.$id, tab: 'themes', mode: null };
+        // Which tab and mode the editor shows, and what was last saved, kept outside the component: when Livewire draws
+        // the form again after an upload, the editor stays where it was and still knows what changed (TH-B13). A new
+        // visit to the page starts on Themes again.
+        if (window.simplifyThemesView?.id !== $wire.$id) window.simplifyThemesView = { id: $wire.$id, tab: 'themes', mode: null, base: '' };
         const stView = window.simplifyThemesView;
         Alpine.data('simplifyThemes', (core) => ({
             // The fonts and pictures come from a JSON block that Livewire updates after an upload. They are not an
@@ -412,7 +413,7 @@
             init() {
                 this.readLib();
                 new MutationObserver(() => this.readLib()).observe(this.$root, { childList: true, subtree: true, characterData: true });
-                this.remember();
+                if (stView.base) this.base = stView.base; else this.remember();
                 this.$watch('tab', (v) => { stView.tab = v; });
                 this.$watch('mode', (v) => { stView.mode = v; });
                 // In Simplify's Admin page the title band (breadcrumb, buttons, subtitle) stays on top while the card
@@ -512,7 +513,7 @@
                 const stops = list ? list.map(([c, at]) => ({ c, p: at })) : [{ c: p.bg, p: 0 }, { c: this.mix(p.bg, p.accent, .22), p: 100 }];
                 g.stops = stops; g.mids = stops.map(() => 50); this.gsel = 0;
             },
-            remember() { this.base = JSON.stringify(this.data); },
+            remember() { this.base = stView.base = JSON.stringify(this.data); },
             changed() { return this.base !== '' && JSON.stringify(this.data) !== this.base; },
             hex(v) { return /^#[0-9a-f]{6}$/i.test(v || '') ? v.toLowerCase() : '#888888'; },
             rgb(h) { h = this.hex(h); return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); },
