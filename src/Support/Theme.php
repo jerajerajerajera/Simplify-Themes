@@ -53,6 +53,10 @@ final class Theme
                 $out[$mode][$role] = Colour::valid($value) ? $value : $base[$mode][$role];
             }
         }
+        // The gradient of each mode; a theme without one gets its background into a little of its accent.
+        foreach (['light', 'dark'] as $mode) {
+            $out['grad'][$mode] = Gradient::clean($in['grad'][$mode] ?? null, Gradient::fromPalette($out[$mode]));
+        }
         $gray = is_string($in['gray'] ?? null) ? strtolower(trim($in['gray'])) : null;
         $out['gray'] = Colour::valid($gray) ? $gray : $base['gray'];
         foreach (self::CHOICES as $key => $allowed) {

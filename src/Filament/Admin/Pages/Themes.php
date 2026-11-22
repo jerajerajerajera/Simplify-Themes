@@ -80,7 +80,7 @@ final class Themes extends Page
     {
         $theme = Store::find($id) ?? Store::themes()[0] ?? null;
         if ($theme === null) {
-            $id = Store::save(null, __(self::T.'new_name'), Presets::SIMPLIFY);
+            $id = Store::save(null, __(self::T.'new_name'), Presets::simplify());
             $theme = Store::find($id);
         }
         $this->themeId = $theme['id'];
@@ -162,7 +162,7 @@ final class Themes extends Page
             }
         }
 
-        return ['fonts' => $fonts, 'uploaded' => $uploadedFonts, 'images' => $images, 'simplify' => Presets::SIMPLIFY];
+        return ['fonts' => $fonts, 'uploaded' => $uploadedFonts, 'images' => $images, 'simplify' => Presets::simplify()];
     }
 
     protected function getHeaderActions(): array
@@ -170,7 +170,7 @@ final class Themes extends Page
         return [
             ActionGroup::make([
                 Action::make('newTheme')->label(__(self::T.'new'))->icon('tabler-plus')
-                    ->action(fn () => $this->saveFirst() || $this->open(Store::save(null, __(self::T.'new_name'), Presets::SIMPLIFY))),
+                    ->action(fn () => $this->saveFirst() || $this->open(Store::save(null, __(self::T.'new_name'), Presets::simplify()))),
                 Action::make('duplicate')->label(__(self::T.'duplicate'))->icon('tabler-copy')
                     ->action(fn () => $this->saveFirst() || $this->open(Store::save(null, Str::limit(__(self::T.'copy_of', ['name' => $this->data['name']]), Theme::NAME_MAX, ''), (array) $this->data['theme']))),
                 Action::make('makeDefault')->label(__(self::T.'make_default'))->icon('tabler-star')
@@ -194,7 +194,7 @@ final class Themes extends Page
                     ->schema([FileUpload::make('file')->label(__(self::T.'import_file'))->acceptedFileTypes(['application/json', 'text/plain'])->maxSize(64)->storeFiles(false)->required()])
                     ->action(fn (array $data) => $this->saveFirst() || $this->import($data['file'] ?? null)),
                 Action::make('reset')->label(__(self::T.'reset'))->icon('tabler-restore')
-                    ->action(fn () => $this->data['theme'] = Presets::SIMPLIFY),
+                    ->action(fn () => $this->data['theme'] = Presets::simplify()),
                 Action::make('delete')->label(__(self::T.'delete'))->icon('tabler-trash')->color('danger')
                     ->requiresConfirmation()->modalHeading(fn () => __(self::T.'delete_heading', ['name' => $this->data['name']]))
                     ->modalDescription(__(self::T.'delete_help'))

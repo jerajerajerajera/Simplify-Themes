@@ -109,8 +109,7 @@ final class Css
         if ($t['bg'] === 'gradient') {
             $css = '';
             foreach (['light' => ':root:root:root:not(.dark)', 'dark' => ':root:root:root.dark'] as $mode => $selector) {
-                $p = $t[$mode];
-                $css .= $selector.'{background:linear-gradient(160deg, '.$p['bg'].', '.Colour::mix($p['bg'], $p['accent'], .22).') fixed !important}';
+                $css .= $selector.'{background:'.Gradient::css($t['grad'][$mode]).' fixed !important}';
             }
 
             return $css.'html:root body{background:transparent !important}';

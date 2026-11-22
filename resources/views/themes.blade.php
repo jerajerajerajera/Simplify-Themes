@@ -126,12 +126,65 @@
                         <p class="st-hint">{{ $t('background_help') }}</p>
                         <div class="st-choices">
                             @foreach (['plain', 'gradient', 'image'] as $kind)
-                                <button type="button" class="st-choice" x-on:click="data.theme.bg = '{{ $kind }}'" :aria-pressed="data.theme.bg === '{{ $kind }}'"
+                                <button type="button" class="st-choice" data-bg="{{ $kind }}" x-on:click="data.theme.bg = '{{ $kind }}'" :aria-pressed="data.theme.bg === '{{ $kind }}'"
                                     @if ($kind === 'image') :disabled="lib.images.length === 0" @endif>
                                     <b>{{ $t('bg_'.$kind) }}</b><small>{{ $t('bg_'.$kind.'_help') }}</small>
                                 </button>
                             @endforeach
                         </div>
+                    </div>
+                    <div class="st-sec" x-show="data.theme.bg === 'gradient'">
+                        <h3>{{ $t('gradient') }}</h3>
+                        <p class="st-hint">{{ $t('gradient_help') }}</p>
+                        <div class="st-gpre">
+                            <button type="button" x-on:click="usePreset(null)" :style="{ background: `linear-gradient(90deg, ${palette().bg}, ${mix(palette().bg, palette().accent, .22)})` }" title="{{ $t('grad_from_theme') }}" aria-label="{{ $t('grad_from_theme') }}"></button>
+                            <template x-for="(list, i) in gPresets" :key="i">
+                                <button type="button" x-on:click="usePreset(list)" :style="{ background: 'linear-gradient(90deg, ' + list.map(([c, at]) => c + ' ' + at + '%').join(', ') + ')' }" :aria-label="@js($t('grad_ready')) + ' ' + (i + 1)"></button>
+                            </template>
+                        </div>
+                        <div class="st-gwrap">
+                            <div class="st-gbar" x-ref="gbar" :style="{ '--g': gradCss(g(), true) }" x-on:pointerdown="barDown($event)" x-on:pointermove="barMove($event)" x-on:pointerup="gdrag = null">
+                                <template x-for="(s, i) in g().stops" :key="i"><span class="st-gstop" :class="{ 'is-on': i === gsel }" :data-stop="i" :style="{ left: s.p + '%', background: s.c }"></span></template>
+                                <template x-for="m in mids()" :key="m.key"><span class="st-gmid" :class="{ 'is-seam': m.key === 'wrap' }" :data-mid="m.key" :style="{ left: m.left + '%' }"></span></template>
+                            </div>
+                        </div>
+                        <template x-if="g().stops[gsel]">
+                            <div>
+                                <div class="st-field"><span>{{ $t('grad_colour') }}</span>
+                                    <div class="st-gsel">
+                                        <input type="color" :value="g().stops[gsel].c" x-on:input="g().stops[gsel].c = $event.target.value" aria-label="{{ $t('grad_colour') }}">
+                                        <input type="text" class="st-input" maxlength="7" :value="g().stops[gsel].c" x-on:change="/^#[0-9a-f]{6}$/i.test($event.target.value) && (g().stops[gsel].c = $event.target.value.toLowerCase())" aria-label="{{ $t('grad_colour') }}">
+                                        <button type="button" class="st-btn" x-on:click="removeStop(gsel)" :disabled="g().stops.length <= 2" aria-label="{{ $t('grad_remove') }}" title="{{ $t('grad_remove') }}"><x-filament::icon icon="tabler-x" class="st-i" /></button>
+                                    </div>
+                                </div>
+                                <div class="st-field"><span>{{ $t('grad_position') }}</span><div class="st-range"><input type="range" min="0" max="100" x-model.number="g().stops[gsel].p" aria-label="{{ $t('grad_position') }}"><output x-text="g().stops[gsel].p + '%'"></output></div></div>
+                            </div>
+                        </template>
+                        <div class="st-field"><span>{{ $t('grad_shape') }}</span>
+                            <div class="st-choices st-gshape">
+                                @foreach (\Simplify\Themes\Support\Gradient::TYPES as $type)
+                                    <button type="button" class="st-choice" x-on:click="g().type = '{{ $type }}'" :aria-pressed="g().type === '{{ $type }}'">
+                                        <i :style="{ background: gradCss({ ...g(), type: '{{ $type }}', repeat: false }, false) }"></i><b>{{ $t('grad_'.$type) }}</b>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="st-field" x-show="g().type !== 'radial'"><span>{{ $t('grad_angle') }}</span>
+                            <div class="st-dirbox">
+                                <div class="st-dial" role="slider" tabindex="0" aria-label="{{ $t('grad_angle') }}" aria-valuemin="0" aria-valuemax="359" :aria-valuenow="g().angle"
+                                    x-on:pointerdown="dial($event, true, (d) => g().angle = d)" x-on:pointermove="dial($event, false, (d) => g().angle = d)" x-on:keydown="dialKey($event, g().angle, (d) => g().angle = d)">
+                                    <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="st-dial-ring"/><path d="M50 8v7M92 50h-7M50 92v-7M8 50h7" class="st-dial-ticks"/><g class="st-dial-hand" :style="{ transform: 'rotate(' + g().angle + 'deg)' }"><path d="M50 50V14"/><path d="M43 22l7-10 7 10" class="st-dial-tip"/></g><circle cx="50" cy="50" r="4" class="st-dial-tip"/></svg>
+                                </div>
+                                <output x-text="g().angle + '°'"></output>
+                            </div>
+                        </div>
+                        @foreach (['cx', 'cy'] as $key)
+                            <div class="st-field" x-show="g().type !== 'linear'"><span>{{ $t('grad_'.$key) }}</span><div class="st-range"><input type="range" min="0" max="100" x-model.number="g().{{ $key }}" aria-label="{{ $t('grad_'.$key) }}"><output x-text="g().{{ $key }} + '%'"></output></div></div>
+                        @endforeach
+                        <div class="st-field"><span>{{ $t('grad_repeat') }}</span>
+                            <label class="st-switch st-repeat"><input type="checkbox" :checked="g().repeat" x-on:change="setRepeat($event.target.checked)"><i></i><span class="st-hint">{{ $t('grad_repeat_help') }}</span></label>
+                        </div>
+                        <div class="st-field" x-show="g().repeat"><span>{{ $t('grad_size') }}</span><div class="st-range"><input type="range" min="5" max="100" x-model.number="g().size" aria-label="{{ $t('grad_size') }}"><output x-text="g().size + '%'"></output></div></div>
                     </div>
                     <div class="st-sec">
                         <h3>{{ $t('effect') }}</h3>
@@ -150,7 +203,7 @@
                             <div class="st-field"><span>{{ $t('fx_direction') }}<small>{{ $t('fx_direction_help') }}</small></span>
                                 <div class="st-dirbox">
                                     <div class="st-dial" role="slider" tabindex="0" aria-label="{{ $t('fx_direction') }}" aria-valuemin="0" aria-valuemax="359" :aria-valuenow="data.theme.fx_dir"
-                                        x-on:pointerdown="dial($event, true)" x-on:pointermove="dial($event, false)" x-on:keydown="dialKey($event)">
+                                        x-on:pointerdown="dial($event, true, (d) => data.theme.fx_dir = d)" x-on:pointermove="dial($event, false, (d) => data.theme.fx_dir = d)" x-on:keydown="dialKey($event, data.theme.fx_dir, (d) => data.theme.fx_dir = d)">
                                         <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="st-dial-ring"/><path d="M50 8v7M92 50h-7M50 92v-7M8 50h7" class="st-dial-ticks"/><g class="st-dial-hand" :style="{ transform: 'rotate(' + data.theme.fx_dir + 'deg)' }"><path d="M50 50V14"/><path d="M43 22l7-10 7 10" class="st-dial-tip"/></g><circle cx="50" cy="50" r="4" class="st-dial-tip"/></svg>
                                     </div>
                                     <output x-text="data.theme.fx_dir + '°'"></output>
@@ -367,15 +420,69 @@
                     : { type, amount: t.fx_amount, speed: t.fx_speed, size: t.fx_size, strength: t.fx_strength, glow: t.fx_glow, dir: t.fx_dir, col, bands };
             },
             // The direction dial: drag round it, or the arrow keys in steps of 15 degrees.
-            dial(e, down) {
+            dial(e, down, set) {
                 const el = e.currentTarget;
                 if (down) el.setPointerCapture(e.pointerId); else if (!el.hasPointerCapture(e.pointerId)) return;
                 const r = el.getBoundingClientRect(), deg = Math.atan2(e.clientX - r.left - r.width / 2, -(e.clientY - r.top - r.height / 2)) * 180 / Math.PI;
-                this.data.theme.fx_dir = (Math.round(deg / 5) * 5 + 360) % 360;
+                set((Math.round(deg / 5) * 5 + 360) % 360);
             },
-            dialKey(e) {
+            dialKey(e, now, set) {
                 const step = { ArrowRight: 15, ArrowUp: 15, ArrowLeft: -15, ArrowDown: -15 }[e.key];
-                if (step) { e.preventDefault(); this.data.theme.fx_dir = (this.data.theme.fx_dir + step + 360) % 360; }
+                if (step) { e.preventDefault(); set((now + step + 360) % 360); }
+            },
+            // The gradient of the mode the live preview shows; Gradient.php draws the same on the panel.
+            gsel: 0,
+            gdrag: null,
+            gPresets: @js(\Simplify\Themes\Support\Gradient::PRESETS),
+            g() { return this.data.theme.grad[this.mode]; },
+            gradCss(g, bar) {
+                const k = g.repeat && !bar ? g.size / 100 : 1;
+                const st = g.stops.map((s, i) => ({ c: s.c, p: s.p, m: g.mids[i] ?? 50 })).sort((a, b) => a.p - b.p);
+                if (g.repeat) { st[st.length - 1].m = g.wrap; st.push({ c: st[0].c, p: 100 + st[0].p, m: 50 }); }
+                const list = st.map((s, i) => `${s.c} ${s.p * k}%` + (st[i + 1] ? `, ${(s.p + (st[i + 1].p - s.p) * s.m / 100) * k}%` : '')).join(', ');
+                if (bar) return `linear-gradient(90deg, ${list})`;
+                const r = g.repeat ? 'repeating-' : '';
+                if (g.type === 'radial') return `${r}radial-gradient(circle at ${g.cx}% ${g.cy}%, ${list})`;
+                if (g.type === 'conic') return `${r}conic-gradient(from ${g.angle}deg at ${g.cx}% ${g.cy}%, ${list})`;
+                return `${r}linear-gradient(${g.angle}deg, ${list})`;
+            },
+            order() { const g = this.g(); return g.stops.map((s, i) => i).sort((a, b) => g.stops[a].p - g.stops[b].p); },
+            // The diamonds: one between each pair of colours, and when it repeats one for the seam back to the first.
+            mids() {
+                const g = this.g(), o = this.order(), out = o.slice(0, -1).map((i, n) => ({ key: i, left: g.stops[i].p + (g.stops[o[n + 1]].p - g.stops[i].p) * (g.mids[i] ?? 50) / 100 }));
+                if (g.repeat) { const a = g.stops[o[o.length - 1]].p; out.push({ key: 'wrap', left: Math.min(100, a + (100 + g.stops[o[0]].p - a) * g.wrap / 100) }); }
+                return out;
+            },
+            gpct(e) { const r = this.$refs.gbar.getBoundingClientRect(); return Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)); },
+            barDown(e) {
+                const g = this.g(), stop = e.target.closest('[data-stop]'), mid = e.target.closest('[data-mid]');
+                this.$refs.gbar.setPointerCapture(e.pointerId); e.preventDefault();
+                if (mid) { this.gdrag = { mid: mid.dataset.mid === 'wrap' ? 'wrap' : +mid.dataset.mid }; return; }
+                if (stop) { this.gsel = +stop.dataset.stop; this.gdrag = { stop: this.gsel }; return; }
+                if (g.stops.length >= {{ \Simplify\Themes\Support\Gradient::MAX }}) return;
+                g.stops.push({ c: (g.stops[this.gsel] || g.stops[0]).c, p: Math.round(this.gpct(e)) }); g.mids.push(50);
+                this.gsel = g.stops.length - 1; this.gdrag = { stop: this.gsel };
+            },
+            barMove(e) {
+                if (!this.gdrag || !this.$refs.gbar.hasPointerCapture(e.pointerId)) return;
+                const g = this.g(), p = this.gpct(e), o = this.order(), d = this.gdrag;
+                const between = (a, b) => Math.round(Math.max(5, Math.min(95, (p - a) / ((b - a) || 1) * 100)));
+                if (d.mid === 'wrap') { g.wrap = between(g.stops[o[o.length - 1]].p, 100 + g.stops[o[0]].p); return; }
+                if (d.mid !== undefined) { g.mids[d.mid] = between(g.stops[d.mid].p, g.stops[o[o.indexOf(d.mid) + 1]].p); return; }
+                if (e.clientY > this.$refs.gbar.getBoundingClientRect().bottom + 46 && g.stops.length > 2) { this.removeStop(d.stop); this.gdrag = null; return; }
+                g.stops[d.stop].p = Math.round(p);
+            },
+            removeStop(i) { const g = this.g(); if (g.stops.length > 2) { g.stops.splice(i, 1); g.mids.splice(i, 1); this.gsel = 0; } },
+            setRepeat(on) {
+                const g = this.g(), ps = g.stops.map((s) => s.p);
+                g.repeat = on;
+                // Room for the seam: when the colours fill the whole bar, they move closer together first.
+                if (on && 100 + Math.min(...ps) - Math.max(...ps) < 15) g.stops.forEach((s) => { s.p = Math.round(s.p * .75); });
+            },
+            usePreset(list) {
+                const g = this.g(), p = this.palette();
+                const stops = list ? list.map(([c, at]) => ({ c, p: at })) : [{ c: p.bg, p: 0 }, { c: this.mix(p.bg, p.accent, .22), p: 100 }];
+                g.stops = stops; g.mids = stops.map(() => 50); this.gsel = 0;
             },
             remember() { this.base = JSON.stringify(this.data); },
             changed() { return this.base !== '' && JSON.stringify(this.data) !== this.base; },
@@ -418,7 +525,7 @@
                 const line = !core ? p.line : t.lines === 'subtle' ? this.mix(p.line, p.surface, .45) : t.lines === 'strong' ? this.mix(p.line, p.ink, .18) : p.line;
                 const follow = core && t.console === 'follow';
                 return {
-                    '--pv-bg': t.bg === 'gradient' ? `linear-gradient(160deg, ${p.bg}, ${this.mix(p.bg, p.accent, .22)})` : p.bg,
+                    '--pv-bg': t.bg === 'gradient' ? this.gradCss(this.g(), false) : p.bg,
                     '--pv-surface': glass ? `color-mix(in srgb, ${p.surface} ${100 - glass}%, transparent)` : p.surface,
                     '--pv-raised': p.raised, '--pv-ink': p.ink, '--pv-muted': p.muted, '--pv-line': line,
                     '--pv-accent': p.accent, '--pv-on': this.on(p.accent), '--pv-ok': p.ok, '--pv-warn': p.warn, '--pv-danger': p.danger,

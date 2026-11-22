@@ -106,6 +106,22 @@
     .st-dial-hand { transform-origin: 50px 50px; }
     .st-dial-hand path:first-child { fill: none; stroke: var(--st-primary); stroke-width: 3.5; stroke-linecap: round; }
     .st-dial-tip { fill: var(--st-primary); }
+    .st-gpre { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+    .st-gpre button { width: 44px; height: 28px; padding: 0; border: 1px solid var(--st-line); border-radius: 7px; cursor: pointer; }
+    .st-gpre button:focus-visible { outline: 2px solid var(--st-primary); outline-offset: 2px; }
+    .st-gwrap { position: relative; padding: 14px 9px 24px; user-select: none; touch-action: none; }
+    .st-gbar { position: relative; height: 30px; border: 1px solid var(--st-line); border-radius: 8px; cursor: copy;
+        background-image: var(--g), conic-gradient(#ccc 25%, #fff 0 50%, #ccc 0 75%, #fff 0); background-size: auto, 12px 12px; }
+    .st-gstop { position: absolute; top: calc(100% + 4px); width: 18px; height: 18px; margin-left: -9px; border: 2px solid var(--st-surface); border-radius: 5px; box-shadow: 0 0 0 1px var(--st-muted); cursor: ew-resize; }
+    .st-gstop.is-on { box-shadow: 0 0 0 2px var(--st-primary); }
+    .st-gmid { position: absolute; bottom: calc(100% + 4px); width: 9px; height: 9px; margin-left: -4.5px; border-radius: 1px; background: var(--st-muted); transform: rotate(45deg); cursor: ew-resize; }
+    .st-gmid:hover { background: var(--st-primary); }
+    .st-gmid.is-seam { background: var(--st-warn); }
+    .st-gsel { display: flex; align-items: center; gap: 10px; }
+    .st-gsel input[type=color] { width: 40px; height: 32px; padding: 2px; border: 1px solid var(--st-line); border-radius: 8px; background: var(--st-surface); cursor: pointer; }
+    .st-gsel .st-input { width: 100px; font-family: ui-monospace, monospace; }
+    .st-gshape { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .st-gshape i { display: block; height: 28px; border: 1px solid var(--st-line); border-radius: 6px; }
     .st-fx-colour { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
     .st-fx-colour input[type=color] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--st-line); border-radius: 8px; background: var(--st-surface); cursor: pointer; }
     .st-fx-colour input[type=color]:disabled { opacity: .4; cursor: default; }

@@ -43,9 +43,21 @@ final class Presets
         ],
     ];
 
+    /** Simplify's own look as a full theme, with the gradient its colours give. @return array<string, mixed> */
+    public static function simplify(): array
+    {
+        return self::withGradient(self::SIMPLIFY);
+    }
+
     /** @return array<string, array<string, mixed>> name => full theme */
     public static function ready(): array
     {
-        return array_map(fn (array $changes) => array_replace(self::SIMPLIFY, $changes), self::READY);
+        return array_map(fn (array $changes) => self::withGradient(array_replace(self::SIMPLIFY, $changes)), self::READY);
+    }
+
+    /** @param array<string, mixed> $theme @return array<string, mixed> */
+    private static function withGradient(array $theme): array
+    {
+        return $theme + ['grad' => ['light' => Gradient::fromPalette($theme['light']), 'dark' => Gradient::fromPalette($theme['dark'])]];
     }
 }

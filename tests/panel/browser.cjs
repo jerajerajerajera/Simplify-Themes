@@ -104,6 +104,18 @@ async function run(browser, viewport, scheme, saves) {
       say('Save keeps the change', (await page.inputValue('#st-name').catch(() => '')) === name);
       // The moving background: picking an effect moves the live preview, counts as a change and reaches the panel after Save.
       await page.locator('.st-tab').nth(TABS.indexOf('background')).click();
+      // The gradient editor: a click on the bar adds a colour, Repeat makes stripes, the preview and the panel follow.
+      await page.locator('[data-bg="gradient"]').click();
+      await sleep(300);
+      const before = await page.locator('.st-gstop').count();
+      const bar = await page.locator('.st-gbar').boundingBox();
+      if (bar) await page.mouse.click(bar.x + bar.width * .3, bar.y + bar.height / 2);
+      await sleep(300);
+      say('a click on the gradient bar adds a colour', await page.locator('.st-gstop').count() === before + 1, { before, after: await page.locator('.st-gstop').count() });
+      await page.locator('.st-repeat').click();
+      await sleep(300);
+      say('a repeating gradient reaches the preview', (await page.locator('.st-pv').getAttribute('style') || '').includes('repeating-'));
+      await shot('editor-gradient');
       await page.locator('.st-fxs .st-choice').nth(1).click();
       await sleep(800);
       say('an effect moves in the live preview', await drawn('.st-pv-fx'));
@@ -117,6 +129,7 @@ async function run(browser, viewport, scheme, saves) {
     say('the overview opens with the default theme', await page.locator('style#simplify-themes').count() === 1);
     await sleep(800);
     say('the effect moves behind the overview', await drawn('#simplify-themes-fx'));
+    say('the panel wears the saved gradient', await page.evaluate(() => getComputedStyle(document.documentElement).backgroundImage.includes('gradient')));
     // Behind everything: the middle of the page is never the effect's canvas, so every click still lands.
     say('the effect never covers what people click', await page.evaluate(() => document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.id !== 'simplify-themes-fx'));
     await shot('overview');

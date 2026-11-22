@@ -4,7 +4,7 @@
 // tokens, and a font upload is recognised by its bytes. Run: php tests/themes.php
 declare(strict_types=1);
 
-foreach (['Colour', 'Fonts', 'Presets', 'Theme', 'Css', 'Effects', 'Files'] as $class) {
+foreach (['Colour', 'Fonts', 'Presets', 'Theme', 'Gradient', 'Css', 'Effects', 'Files'] as $class) {
     require __DIR__."/../src/Support/$class.php";
 }
 
@@ -12,6 +12,7 @@ use Simplify\Themes\Support\Colour;
 use Simplify\Themes\Support\Css;
 use Simplify\Themes\Support\Effects;
 use Simplify\Themes\Support\Files;
+use Simplify\Themes\Support\Gradient;
 use Simplify\Themes\Support\Fonts;
 use Simplify\Themes\Support\Presets;
 use Simplify\Themes\Support\Theme;
@@ -100,10 +101,22 @@ foreach (Fonts::BUNDLED as $key => [, , , $files]) {
     }
 }
 
+// Gradients: 2 to 6 checked colours, numbers in range, and a seamless repeat
+$g = $clean(['bg' => 'gradient', 'grad' => ['dark' => ['type' => 'conic', 'angle' => 720, 'cx' => 150, 'repeat' => true, 'size' => 20, 'wrap' => 1,
+    'stops' => [['c' => '#FF0000', 'p' => 0], ['c' => 'red;}', 'p' => 50], ['c' => '#0000ff', 'p' => 80]], 'mids' => [30, 50, 99]]]]);
+$dark = $g['grad']['dark'];
+check($dark['type'] === 'conic' && $dark['angle'] === 359 && $dark['cx'] === 100 && $dark['wrap'] === 5 && count($dark['stops']) === 2 && $dark['stops'][0]['c'] === '#ff0000', 'gradient values are checked and kept in range');
+check(Gradient::css($dark) === 'repeating-conic-gradient(from 359deg at 100% 30%, #ff0000 0%, 4.8%, #0000ff 16%, 16.2%, #ff0000 20%)', 'a repeating gradient blends its last colour back into its first');
+check($clean(['grad' => ['light' => ['stops' => [['c' => '#ffffff', 'p' => 0]]]]])['grad']['light'] === Gradient::fromPalette(Presets::SIMPLIFY['light']), 'a gradient needs two colours, or it is the theme\'s own');
+check(count($clean(['grad' => ['light' => ['stops' => array_fill(0, 9, ['c' => '#123456', 'p' => 10])]]])['grad']['light']['stops']) === Gradient::MAX, 'at most six colours');
+$gCss = Css::build($g, fn ($f) => '/f/'.$f, [], []);
+check(str_contains($gCss, ':root:root:root.dark{background:repeating-conic-gradient(') && ! str_contains($gCss, 'red;}'), 'the panel wears the checked gradient');
+check(str_contains(Css::build($clean(['bg' => 'gradient']), fn ($f) => '/f/'.$f, [], []), 'linear-gradient(160deg, #f4f4f5 0%, 50%, '), 'a theme without its own gradient keeps the old one');
+
 // The moving background: only known effects, numbers in range, a colour or the theme's own; no code reaches the page
 $fx = $clean(['effect' => 'stars', 'fx_amount' => 9999, 'fx_speed' => -5, 'fx_dir' => 400, 'fx_glow' => '30', 'fx_colour' => 'red"><script>']);
 check($fx['effect'] === 'stars' && $fx['fx_amount'] === 250 && $fx['fx_speed'] === 10 && $fx['fx_dir'] === 359 && $fx['fx_glow'] === 30, 'effect settings are kept inside their range');
-check($fx['fx_colour'] === null && $clean(['fx_colour' => '#ABCDEF'])['fx_colour'] === '#abcdef', "an effect colour is #rrggbb or follows the theme");
+check($fx['fx_colour'] === null && $clean(['fx_colour' => '#ABCDEF'])['fx_colour'] === '#abcdef', 'an effect colour is #rrggbb or follows the theme');
 check($clean(['effect' => 'alert(1)'])['effect'] === 'none', 'an unknown effect is no effect');
 check(Effects::tag($clean([]), '/x.js') === '' && Effects::css($clean([])) === '', 'without an effect the page gets nothing');
 $tag = Effects::tag($fx, '/simplify-themes/effects.js?v=1');
