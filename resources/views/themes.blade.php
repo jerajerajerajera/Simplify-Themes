@@ -227,7 +227,10 @@
                         </div>
                     </div>
                     <div class="st-sec">
-                        <div class="st-sec-head"><h3>{{ $t('pictures') }}</h3>{{ $this->uploadImageAction }}</div>
+                        <div class="st-sec-head"><h3>{{ $t('pictures') }}</h3>
+                            {{-- The new picture becomes the background of the mode being changed: light, or dark (TH-B15). --}}
+                            <button type="button" class="st-btn st-upload-image" x-on:click="$wire.mountAction('uploadImage', { dark: mode === 'dark' })"><x-filament::icon icon="tabler-upload" class="st-i" />{{ $t('image_upload') }}</button>
+                        </div>
                         <p class="st-hint">{{ $t('pictures_help') }}</p>
                         @forelse ($lib['images'] as $image)
                             <div class="st-file" wire:key="image-{{ $image['id'] }}">
@@ -387,6 +390,10 @@
 
     @script
     <script>
+        // Which tab and mode the editor shows, kept outside the component: when Livewire draws the page again after an
+        // upload, the editor stays where it was (TH-B13). A new visit to the page starts on Themes again.
+        if (window.simplifyThemesView?.id !== $wire.$id) window.simplifyThemesView = { id: $wire.$id, tab: 'themes', mode: null };
+        const stView = window.simplifyThemesView;
         Alpine.data('simplifyThemes', (core) => ({
             // The fonts and pictures come from a JSON block that Livewire updates after an upload. They are not an
             // argument of x-data: a changed x-data starts the component again, which lost the tab and the changes (TH-B4).
@@ -398,14 +405,16 @@
             },
             core,
             data: $wire.$entangle('data'),
-            tab: 'themes',
-            mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+            tab: stView.tab,
+            mode: stView.mode || (document.documentElement.classList.contains('dark') ? 'dark' : 'light'),
             sheet: false,
             base: '',
             init() {
                 this.readLib();
                 new MutationObserver(() => this.readLib()).observe(this.$root, { childList: true, subtree: true, characterData: true });
                 this.remember();
+                this.$watch('tab', (v) => { stView.tab = v; });
+                this.$watch('mode', (v) => { stView.mode = v; });
                 // In Simplify's Admin page the title band (breadcrumb, buttons, subtitle) stays on top while the card
                 // scrolls: the tabs and the preview stay right under it, however tall it is.
                 const head = document.querySelector('.fi-main .fi-header');

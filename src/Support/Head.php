@@ -24,9 +24,15 @@ final class Head
         }
         $light = $theme['data']['light'];
         try {
+            // Filament's own scale from one colour is as bright as an accent: helper text and table rows turned blue
+            // (TH-B11). A Filament with oklch() palettes gets the theme's grey scale instead.
+            $gray = Color::hex($theme['data']['gray']);
+            if (is_string($gray[500] ?? null) && str_starts_with($gray[500], 'oklch(')) {
+                $gray = Colour::greys($theme['data']['gray']);
+            }
             FilamentColor::register([
                 'primary' => Color::hex($light['accent']),
-                'gray' => Color::hex($theme['data']['gray']),
+                'gray' => $gray,
                 'success' => Color::hex($light['ok']),
                 'warning' => Color::hex($light['warn']),
                 'danger' => Color::hex($light['danger']),

@@ -34,6 +34,10 @@ $clean = fn (array $in) => Theme::clean($in, $fonts, [3]);
 check(abs(Colour::contrast('#000000', '#ffffff') - 21) < .01, 'black on white is 21:1');
 check(Colour::mix('#000000', '#ffffff', .5) === '#808080', 'mixing black and white gives grey');
 check(Colour::on('#2563eb') === '#ffffff' && Colour::on('#fde047') === '#111118', 'button text picks the readable colour');
+// TH-B11: the panel's grey scale keeps the picked grey's hue but stays a grey, not an accent.
+$greys = Colour::greys('#64748b');
+check(count($greys) === 11 && preg_match('/^oklch\(0\.705 0\.0[0-4]\d 25\d\./', $greys[400]) === 1, 'a slate grey gives a slate grey scale');
+check((float) explode(' ', Colour::greys('#2563eb')[400])[1] <= Colour::GREY_CHROMA, 'a bright colour as grey still gives a grey scale');
 
 // Clean: nothing but checked values survives
 $evil = Presets::SIMPLIFY;
@@ -107,6 +111,13 @@ $ttf .= str_repeat("\0", 12);
 check(Files::fontType($ttf) === 'ttf', 'a TrueType font with cmap, head and name is recognised');
 check(Files::fontType(substr($ttf, 0, 12).'cmap'.pack('NNN', 0, 9999, 4).substr($ttf, 28)) === null, 'a table outside the file is refused');
 check(preg_match('/^'.Files::PATTERN.'$/', str_repeat('a', 32).'.webp') === 1 && preg_match('/^'.Files::PATTERN.'$/', '../.env') === 0, 'only stored names reach the disk');
+
+// TH-B12: "In use" means shown. A picture kept in a theme whose background is now a gradient is not in use.
+$kept = $clean(['bg' => 'gradient', 'bg_dark' => 'plain', 'image' => 3, 'image_dark' => 3] + Presets::SIMPLIFY);
+check(! Files::usedBy($kept, 3, 'image'), 'a picture behind no mode is not in use');
+check(Files::usedBy(['bg' => 'image'] + $kept, 3, 'image') && Files::usedBy(['bg_dark' => 'image'] + $kept, 3, 'image'), 'a picture behind light or dark is in use');
+check(Files::usedBy(['bg_dark' => 'image', 'image_dark' => null] + $kept, 3, 'image'), 'dark without its own picture uses the light one');
+check(Files::usedBy(['head' => Fonts::uploadedKey(7)] + $kept, 7, 'font') && ! Files::usedBy($kept, 7, 'font'), 'an uploaded font is in use in any slot, and only then');
 check(preg_match('/^'.Fonts::FILE_PATTERN.'$/', 'outfit.woff2') === 1 && preg_match('/^'.Fonts::FILE_PATTERN.'$/', '../LICENSES.txt') === 0, 'only bundled font files are served');
 foreach (Fonts::BUNDLED as $key => [, , , $files]) {
     foreach ($files as [$file]) {
