@@ -162,6 +162,21 @@ async function run(browser, viewport, scheme, saves) {
       await shot('editor-effect');
       await save.click();
       await page.locator(':text("Saved"):visible').first().waitFor({ timeout: 10000 }).catch(() => {});
+      // TH-B13: uploading a picture keeps the editor where it was: same tab, and the change still to be saved.
+      await settle();
+      await page.evaluate(() => { window.stBefore = document.querySelector('form.st'); });
+      const png = await page.screenshot({ clip: { x: 0, y: 0, width: 96, height: 64 } });
+      await page.locator('[wire\\:click*="uploadImage"]').first().click();
+      await page.locator('.fi-modal input[type="file"]').first().waitFor({ state: 'attached', timeout: 8000 }).catch(() => {});
+      await page.locator('.fi-modal input[type="file"]').first().setInputFiles({ name: 'harbour.png', mimeType: 'image/png', buffer: png }).catch(() => {});
+      await settle(1500);
+      await page.locator('.fi-modal-footer-actions button[type="submit"]:visible, .fi-modal-footer-actions button:visible').first().click().catch(() => {});
+      await settle(1000);
+      const after = await page.evaluate(() => ({ sameForm: window.stBefore === document.querySelector('form.st'), pictures: document.querySelectorAll('.st-file .st-thumb').length }));
+      say('a picture upload stays on the Background tab', (await page.locator('.st-tab').nth(TABS.indexOf('background')).getAttribute('aria-selected')) === 'true', after);
+      say('a picture upload counts as a change', await page.locator(':text("Changes made"):visible').first().waitFor({ timeout: 5000 }).then(() => true).catch(() => false), after);
+      say('the uploaded picture is the background', (await page.locator('[data-bg="image"]').getAttribute('aria-pressed')) === 'true', after);
+      await shot('editor-picture');
     }
     // TH-B8: the ⋯ menu in the title bar says what each item does, not only an icon.
     const more = page.locator('.fi-header .fi-dropdown-trigger').first();
@@ -187,6 +202,9 @@ async function run(browser, viewport, scheme, saves) {
       // TH-B7: the title bar over the card is the card's own colour, not a block of the page's plain background.
       const band = await behind('.fi-main .fi-header .fi-header-actions-ctn');
       say('the title bar has the card\'s colour', !!under && !!band && band.bg === under.bg, { band, card: under && under.bg });
+      // TH-B14: the editor keeps the same inset from the card's edge as every other page, not 1px.
+      const inset = await page.evaluate(() => { const card = document.querySelector('.fi-main-ctn'), h = [...document.querySelectorAll('.st-sec h3')].find((el) => el.offsetParent !== null); return card && h ? Math.round(h.getBoundingClientRect().left - card.getBoundingClientRect().left) : -1; });
+      say('the editor keeps an inset from the card\'s edge', inset >= 12, { inset });
       // TH-B6: scrolled to the end, the tabs and the preview are still in sight under the title bar.
       await scrollEditorToEnd();
       await sleep(300);
@@ -199,6 +217,10 @@ async function run(browser, viewport, scheme, saves) {
     say('the overview opens with the default theme', await page.locator('style#simplify-themes').count() === 1);
     await sleep(800);
     say('the effect moves behind the overview', await drawn('#simplify-themes-fx'));
+    // TH-B11: Filament's greys (helper text, table rows, menus) stay greys in the theme's tint, not an accent blue.
+    const grey = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--gray-400').trim());
+    const chroma = parseFloat((grey.match(/^oklch\(\s*[\d.]+%?\s+([\d.]+)/) || [])[1]);
+    say('the panel\'s greys stay grey', !(chroma > .085), { grey });
     say('the panel wears the saved gradient', await page.evaluate(() => getComputedStyle(document.documentElement).backgroundImage.includes('gradient')));
     // Behind everything: the middle of the page is never the effect's canvas, so every click still lands.
     say('the effect never covers what people click', await page.evaluate(() => document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.id !== 'simplify-themes-fx'));
