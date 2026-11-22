@@ -121,7 +121,7 @@
     .st-gsel input[type=color] { width: 40px; height: 32px; padding: 2px; border: 1px solid var(--st-line); border-radius: 8px; background: var(--st-surface); cursor: pointer; }
     .st-gsel .st-input { width: 100px; font-family: ui-monospace, monospace; }
     .st-gshape { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .st-gshape i { display: block; height: 28px; border: 1px solid var(--st-line); border-radius: 6px; }
+    .st-gshape i { display: block; align-self: stretch; width: 100%; height: 28px; border: 1px solid var(--st-line); border-radius: 6px; }
     .st-fx-colour { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
     .st-fx-colour input[type=color] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--st-line); border-radius: 8px; background: var(--st-surface); cursor: pointer; }
     .st-fx-colour input[type=color]:disabled { opacity: .4; cursor: default; }
