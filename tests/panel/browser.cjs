@@ -30,6 +30,23 @@ const onTop = (locator) => locator.evaluate((el) => {
   return !!hit && (hit === el || el.contains(hit));
 }).catch(() => false);
 
+// The box that scrolls around the editor (with Simplify: the Admin page's card), scrolled to its end.
+const scrollEditorToEnd = () => page.evaluate(() => {
+  let el = document.querySelector('form.st');
+  while (el && el !== document.documentElement && !(el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(el).overflowY))) el = el.parentElement;
+  if (el) el.scrollTop = el.scrollHeight;
+  return el ? el.className : null;
+});
+// What paints right behind a piece of text: the first box around it with a colour or picture of its own.
+const behind = (selector) => page.evaluate((sel) => {
+  for (let el = document.querySelector(sel); el; el = el.parentElement) {
+    const cs = getComputedStyle(el), a = cs.backgroundColor.match(/[\d.]+/g);
+    if (cs.backgroundImage !== 'none' || (a && (a.length < 4 || +a[3] > .5))) return { tag: el.tagName, cls: String(el.className).slice(0, 60), bg: cs.backgroundColor, image: cs.backgroundImage !== 'none' };
+  }
+  return null;
+}, selector).catch(() => null);
+const stops = () => page.evaluate(() => [...document.querySelectorAll('.st-gstop')].map((el) => parseFloat(el.style.left)));
+
 async function login() {
   await goto('/login');
   await page.fill('#form\\.login', EMAIL); await page.fill('#form\\.password', PASSWORD);
@@ -69,6 +86,9 @@ async function run(browser, viewport, scheme, saves) {
     await page.waitForSelector('.st-tile', { timeout: 10000 }).catch(() => {});
     const tile = await page.evaluate(() => { const el = document.querySelector('.st-tile'); const mini = el && el.querySelector('.st-mini'); return el && mini ? [el.getBoundingClientRect().width, mini.getBoundingClientRect().width] : [0, 0]; }).catch((e) => [0, 0, String(e.message).slice(0, 160)]);
     say('a theme tile shows its preview across the tile', tile[0] > 0 && tile[1] >= tile[0] - 4, { tile: tile[0], preview: tile[1], error: tile[2] });
+    // TH-B10: the tiles show the theme in the panel's own mode: dark tiles in dark mode.
+    const mini = await page.evaluate(() => { const m = [...document.querySelectorAll('.st-tile .st-mini')].find((el) => el.offsetParent !== null); const c = m ? getComputedStyle(m).backgroundColor.match(/\d+/g).map(Number) : [255, 255, 255]; return (c[0] * .3 + c[1] * .59 + c[2] * .11) / 255; });
+    say('a theme tile shows the theme in the panel\'s mode', scheme === 'dark' ? mini < .5 : mini >= .5, { lightness: Math.round(mini * 100) / 100 });
     // TH-B2: on a phone the preview is a sheet that stays out of sight until Live preview opens it.
     if (phone) say('the preview sheet is hidden until opened', !(await page.locator('.st-side').isVisible()));
     for (const tab of TABS) {
@@ -112,6 +132,13 @@ async function run(browser, viewport, scheme, saves) {
       if (bar) await page.mouse.click(bar.x + bar.width * .3, bar.y + bar.height / 2);
       await sleep(300);
       say('a click on the gradient bar adds a colour', await page.locator('.st-gstop').count() === before + 1, { before, after: await page.locator('.st-gstop').count() });
+      // TH-B9: Repeat on and off again before anything else changed puts the colours back where they were.
+      const placed = await stops();
+      await page.locator('.st-repeat').click();
+      await sleep(200);
+      await page.locator('.st-repeat').click();
+      await sleep(200);
+      say('Repeat off puts the colours back', JSON.stringify(await stops()) === JSON.stringify(placed), { before: placed, after: await stops() });
       await page.locator('.st-repeat').click();
       await sleep(300);
       say('a repeating gradient reaches the preview', (await page.locator('.st-pv').getAttribute('style') || '').includes('repeating-'));
@@ -123,6 +150,35 @@ async function run(browser, viewport, scheme, saves) {
       await shot('editor-effect');
       await save.click();
       await page.locator(':text("Saved"):visible').first().waitFor({ timeout: 10000 }).catch(() => {});
+    }
+    // TH-B8: the ⋯ menu in the title bar says what each item does, not only an icon.
+    const more = page.locator('.fi-header .fi-dropdown-trigger').first();
+    if (await more.count()) {
+      await more.click();
+      await sleep(400);
+      const words = await page.evaluate(() => [...document.querySelectorAll('.fi-dropdown-panel .fi-dropdown-list-item')].filter((el) => el.offsetParent !== null).map((el) => el.innerText.trim()));
+      say('the ⋯ menu shows its words', words.length > 2 && words.every((w) => w.length > 1), { words });
+      await shot('editor-more');
+      await page.keyboard.press('Escape');
+      await sleep(200);
+    } else say('the ⋯ menu shows its words', false, { error: 'no ⋯ menu' });
+    if (core && !phone) {
+      // With the saved gradient behind the panel (the default theme), the editor stays readable and in reach.
+      await goto('/admin/simplify-themes');
+      await page.locator('.st-tab').nth(TABS.indexOf('background')).click();
+      await sleep(300);
+      // TH-B6: the editor's text sits on the page's card, not straight on the gradient or picture.
+      const under = await behind('.st-sec h3');
+      say('the editor sits on a card over a gradient', !!under && !['HTML', 'BODY'].includes(under.tag) && !under.image, { under });
+      // TH-B7: the title bar over the card is the card's own colour, not a block of the page's plain background.
+      const band = await behind('.fi-main .fi-header .fi-header-actions-ctn');
+      say('the title bar has the card\'s colour', !!under && !!band && band.bg === under.bg, { band, card: under && under.bg });
+      // TH-B6: scrolled to the end, the tabs and the preview are still in sight under the title bar.
+      await scrollEditorToEnd();
+      await sleep(300);
+      say('the tabs stay in sight when the editor scrolls', await onTop(page.locator('.st-tab').first()));
+      say('the preview stays in sight when the editor scrolls', await onTop(page.locator('.st-side-head').first()));
+      await shot('editor-scrolled');
     }
     // The ready-made default (checks.yml) on the pages everyone sees.
     await goto('/');
