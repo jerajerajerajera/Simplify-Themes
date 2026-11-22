@@ -12,8 +12,8 @@ use Simplify\Themes\Support\Colour;
 use Simplify\Themes\Support\Css;
 use Simplify\Themes\Support\Effects;
 use Simplify\Themes\Support\Files;
-use Simplify\Themes\Support\Gradient;
 use Simplify\Themes\Support\Fonts;
+use Simplify\Themes\Support\Gradient;
 use Simplify\Themes\Support\Presets;
 use Simplify\Themes\Support\Theme;
 
