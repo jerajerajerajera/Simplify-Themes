@@ -61,7 +61,7 @@ final class Css
             $css .= ':is(h1, h2, h3, .fi-header-heading, .fi-section-header-heading, .fi-modal-heading){font-family:'.Fonts::stack($t['head'], $names).'}';
         }
 
-        return $css.self::background($t, $images).self::card($t).Effects::css($t);
+        return $css.self::background($t, $images).self::card($t).self::halo($t).Effects::css($t);
     }
 
     /**
@@ -80,6 +80,35 @@ final class Css
             $css .= 'html.ps-shell'.$is.':not(.ps-frame) .fi-layout>.fi-main-ctn{background:var(--ps-surface) !important;border:1px solid var(--ps-line);border-radius:var(--ps-radius-lg)}'
                 .'html.ps-shell-menu'.$is.':not(.ps-frame) .fi-layout>.fi-main-ctn::before,html.ps-shell-menu'.$is.':not(.ps-frame) .fi-main .fi-header{background:var(--ps-surface) !important'.$blur.'}'
                 .'html'.$is.'{--st-band:var(--ps-surface)}';
+        }
+
+        return $css;
+    }
+
+    /** Text that lies straight on the page's background: the menu, the logo, the filter and the footer. */
+    private const ON_BACKGROUND = '.ps-admin-side,.ps-host-side,.ps-heading,.ps-filter-button,.fi-footer,[data-ps-footer],.fi-sidebar-nav';
+
+    /**
+     * Over a gradient with a colour the text does not stand out on (WCAG AA, 4.5:1), or over a picture, the text that
+     * lies straight on the background gets a soft edge in the mode's own background colour (TH-B16).
+     */
+    private static function halo(array $t): string
+    {
+        $css = '';
+        foreach (['light' => ':not(.dark)', 'dark' => '.dark'] as $mode => $is) {
+            $kind = self::bg($t, $mode);
+            $ink = $t[$mode]['ink'];
+            $weak = match ($kind) {
+                'gradient' => min(array_map(fn (array $stop) => Colour::contrast($ink, $stop['c']), $t['grad'][$mode]['stops'])) < 4.5,
+                'image' => $t['dim'] < 60,
+                default => false,
+            };
+            if (! $weak) {
+                continue;
+            }
+            $bg = $t[$mode]['bg'];
+            $css .= 'html'.$is.' :is('.self::ON_BACKGROUND.'){text-shadow:0 0 2px '.$bg.',0 0 6px '.$bg.',0 0 14px '.$bg.'}'
+                .'html'.$is.' :is('.self::ON_BACKGROUND.') :is(svg,img){filter:drop-shadow(0 0 3px '.$bg.')}';
         }
 
         return $css;

@@ -188,6 +188,10 @@ async function run(browser, viewport, scheme, saves) {
       await page.locator('.fi-dropdown-list-item').first().waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       const words = await page.evaluate(() => [...document.querySelectorAll('.fi-dropdown-panel .fi-dropdown-list-item')].filter((el) => el.getClientRects().length > 0).map((el) => el.innerText.trim()));
       say('the ⋯ menu shows its words', words.length > 2 && words.every((w) => w.length > 1), { words, items: await page.locator('.fi-dropdown-list-item').count() });
+      // TH-B18: and each in full, none cut off with "…".
+      const cut = await page.evaluate(() => [...document.querySelectorAll('.fi-dropdown-panel .fi-dropdown-list-item')].filter((el) => el.getClientRects().length > 0)
+        .flatMap((el) => [...el.querySelectorAll('*')].filter((c) => c.scrollWidth > c.clientWidth + 1 && getComputedStyle(c).textOverflow === 'ellipsis').map((c) => c.innerText.trim())));
+      say('the ⋯ menu shows every item in full', cut.length === 0, { cut });
       await shot('editor-more');
       await page.keyboard.press('Escape');
       await sleep(200);
@@ -212,6 +216,15 @@ async function run(browser, viewport, scheme, saves) {
       say('the tabs stay in sight when the editor scrolls', await onTop(page.locator('.st-tab').first()));
       say('the preview stays in sight when the editor scrolls', await onTop(page.locator('.st-side-head').first()));
       await shot('editor-scrolled');
+      // TH-B17: a menu click keeps the moving background running: the same canvas, not a new one that starts over.
+      await goto('/admin/simplify-themes');
+      await page.evaluate(() => { window.fxBefore = document.getElementById('simplify-themes-fx'); });
+      const link = page.locator('a[wire\\:navigate]:visible:not([href*="simplify-themes"])').first();
+      const href = await link.getAttribute('href').catch(() => null);
+      await link.click().catch(() => {});
+      await settle(1000);
+      const kept = await page.evaluate(() => ({ had: !!window.fxBefore, same: !!window.fxBefore && window.fxBefore === document.getElementById('simplify-themes-fx'), url: location.pathname }));
+      say('a menu click keeps the moving background running', kept.had && kept.same && !kept.url.includes('simplify-themes'), { ...kept, href });
     }
     // The ready-made default (checks.yml) on the pages everyone sees.
     await goto('/');

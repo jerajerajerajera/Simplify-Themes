@@ -141,7 +141,8 @@
         frame = 0;
         if (document.hidden) return;
         for (const run of runs) {
-            if (!run.canvas.isConnected) { runs.delete(run); continue; }
+            // The panel's own canvas is off the page for a moment while a menu click swaps it (it comes back below).
+            if (!run.canvas.isConnected) { if (!run.page) runs.delete(run); continue; }
             draw(run, now);
         }
         if (runs.size) frame = requestAnimationFrame(tick);
@@ -152,9 +153,14 @@
     /* The panel's own canvas: its settings are in data-fx, with colours for light and dark mode. While it runs, the
        page's body lets it show through; the body's own colour moves to the page behind it. */
     const mounted = new WeakSet();
+    let page = null;
     function mountPage() {
         const cv = document.getElementById('simplify-themes-fx');
         if (!cv || mounted.has(cv)) return;
+        // A menu click (wire:navigate) draws a new page with a new canvas. With the same effect the running canvas
+        // takes its place, so the effect goes on instead of starting again (TH-B17).
+        if (page && page.fx === cv.dataset.fx) { cv.replaceWith(page.cv); page.behind(); return; }
+        if (page) { runs.delete(page.run); page.observer.disconnect(); }
         mounted.add(cv);
         let fx;
         try { fx = JSON.parse(cv.dataset.fx || ''); } catch (e) { return; }
@@ -169,16 +175,19 @@
         let dark = html.classList.contains('dark');
         behind();
         // Only a switch between light and dark changes the body's colour; our own class change is ignored.
-        new MutationObserver(() => { if (html.classList.contains('dark') !== dark) { dark = !dark; behind(); } })
-            .observe(html, { attributes: true, attributeFilter: ['class'] });
-        run(cv, () => ({ ...fx, ...fx[html.classList.contains('dark') ? 'dark' : 'light'] }));
+        const observer = new MutationObserver(() => { if (html.classList.contains('dark') !== dark) { dark = !dark; behind(); } });
+        observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+        const r = run(cv, () => ({ ...fx, ...fx[html.classList.contains('dark') ? 'dark' : 'light'] }));
+        r.page = true;
+        page = { cv, fx: cv.dataset.fx, run: r, observer, behind };
     }
 
     function run(canvas, opts) {
         const r = { canvas, opts, key: '', at: 0, drawn: '' };
+        r.stop = () => runs.delete(r);
         runs.add(r);
         wake();
-        return { stop: () => runs.delete(r) };
+        return r;
     }
 
     window.SimplifyThemesFx = { run, mountPage, types: Object.keys(FX) };
