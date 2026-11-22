@@ -1,0 +1,141 @@
+name: Checks
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - run: bash tests/run.sh
+      - run: bash tests/docs-sync.sh
+  pint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: pint
+      - run: pint --test -v
+  # Installs the add-on in a real Pelican panel, with and without Simplify, and goes through what it does.
+  panel-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pelican: '1.0.0-beta38'
+            php: '8.3'
+          - pelican: '1.0.0-rc.2'
+            php: '8.4'
+          - pelican: '1.0.0-rc.2'
+            php: '8.4'
+            simplify: 'main'
+          - pelican: '1.0.0-rc.4'
+            php: '8.4'
+            browser: true
+          - pelican: '1.0.0-rc.4'
+            php: '8.4'
+            simplify: 'main'
+            browser: true
+    name: panel-smoke (Pelican ${{ matrix.pelican }}${{ matrix.simplify && format(', Simplify {0}', matrix.simplify) || '' }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: bcmath, gd, intl, mbstring, pdo_sqlite, sqlite3, zip
+          tools: composer
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g yarn
+      - name: Install Pelican ${{ matrix.pelican }}
+        run: |
+          git clone --quiet --depth 1 --branch "v${{ matrix.pelican }}" https://github.com/pelican-dev/panel.git panel
+          cd panel
+          composer install --no-interaction --no-progress --prefer-dist
+          sed -i "s/'version' => 'canary'/'version' => '${{ matrix.pelican }}'/" config/app.php
+          cp .env.example .env
+          sed -i 's/^APP_INSTALLED=.*/APP_INSTALLED=true/; s/^APP_DEBUG=.*/APP_DEBUG=true/; s#^APP_URL=.*#APP_URL=http://127.0.0.1:8001#' .env
+          printf 'DB_CONNECTION=sqlite\nQUEUE_CONNECTION=sync\nCACHE_STORE=file\nSESSION_DRIVER=file\nMAIL_MAILER=log\n' >> .env
+          touch database/database.sqlite
+          php artisan key:generate --force
+          php artisan migrate --force
+          yarn install --silent
+      - name: Install Simplify ${{ matrix.simplify }}
+        if: matrix.simplify
+        run: |
+          git clone --quiet --depth 1 --branch "${{ matrix.simplify }}" https://github.com/jerajerajerajera/simplify.git panel/plugins/simplify
+          rm -rf panel/plugins/simplify/.git
+          cd panel
+          php artisan p:plugin:install simplify
+          php artisan p:plugin:list | grep -E '\| Simplify .*\| enabled' || { echo 'Simplify did not install'; exit 1; }
+      - name: Install Simplify Themes
+        run: |
+          mkdir -p panel/plugins/simplify-themes
+          tar -C plugin --exclude=.git -cf - . | tar -C panel/plugins/simplify-themes -xf -
+          cd panel
+          php artisan p:plugin:install simplify-themes
+          php artisan p:plugin:list | grep -E 'Simplify Themes .*\| enabled' || { echo 'Simplify Themes did not install'; exit 1; }
+      - name: Go through the add-on
+        working-directory: panel
+        run: |
+          php plugins/simplify-themes/tests/panel/smoke.php | tee smoke.txt
+          grep -q '^All steps passed$' smoke.txt
+      - name: Uninstall and install again
+        working-directory: panel
+        # Uninstalling keeps the themes and files; Pelican's own pages still open without the add-on.
+        run: |
+          before="$(php artisan tinker --execute="echo DB::table('simplify_themes')->count();")"
+          php artisan p:plugin:uninstall simplify-themes --no-interaction
+          php artisan p:plugin:list | grep -E 'Simplify Themes .*\| not_installed' || { echo 'Simplify Themes did not uninstall'; exit 1; }
+          php artisan tinker --execute="\$r = app(Illuminate\Contracts\Http\Kernel::class)->handle(Illuminate\Http\Request::create('/login')); echo 'login '.\$r->getStatusCode();" | tee login.txt
+          grep -qx 'login 200' login.txt || { echo 'Pelican does not open without Simplify Themes'; exit 1; }
+          php artisan p:plugin:install simplify-themes
+          php artisan p:plugin:list | grep -E 'Simplify Themes .*\| enabled' || { echo 'Simplify Themes did not install again'; exit 1; }
+          after="$(php artisan tinker --execute="echo DB::table('simplify_themes')->count();")"
+          [ "$before" = "$after" ] || { echo "themes lost on uninstall: $before before, $after after"; exit 1; }
+      - name: Start the panel for a browser
+        if: matrix.browser
+        working-directory: panel
+        run: |
+          yarn build > /dev/null
+          php artisan tinker --execute="\$u = App\Models\User::factory()->create(['email' => 'browser-themes@example.com', 'username' => 'browserthemes', 'password' => bcrypt('BrowserThemes123!')]); \$u->syncRoles(App\Models\Role::getRootAdmin()); Simplify\Themes\Support\Store::addReadyMade(); Simplify\Themes\Support\Store::saveSettings((int) DB::table('simplify_themes')->where('name', 'Ocean night')->value('id'), true);"
+          PHP_CLI_SERVER_WORKERS=8 nohup php artisan serve --host 127.0.0.1 --port 8001 > serve.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:8001/login && break; sleep 1; done
+      - name: Click through in a browser
+        if: matrix.browser
+        working-directory: plugin
+        run: |
+          mkdir -p ../result
+          npm init -y > /dev/null
+          npm install --silent playwright@1.48.2
+          npx playwright install --with-deps chromium > /dev/null
+          node tests/panel/browser.cjs --base http://127.0.0.1:8001 --out ../result ${{ matrix.simplify && '--core' || '' }} | tee ../result/browser.txt
+          tail -n 1 ../result/browser.txt | grep -qx 'All steps passed'
+      - if: always() && matrix.browser
+        uses: actions/upload-artifact@v4
+        with:
+          name: screens${{ matrix.simplify && '-simplify' || '-pelican' }}
+          path: result
+          retention-days: 14
+      - name: PHPStan (level 5, in the panel)
+        if: matrix.simplify == 'main' && matrix.pelican == '1.0.0-rc.4'
+        working-directory: panel
+        run: |
+          composer require --dev larastan/larastan --no-interaction --no-progress --quiet
+          vendor/bin/phpstan analyse --configuration plugins/simplify-themes/phpstan.neon --memory-limit 1G --no-progress --error-format=github
+      - name: Logs
+        if: failure()
+        run: |
+          tail -n 20 panel/serve.log 2>/dev/null || true
+          grep -h -E '^\[[0-9-]+ [0-9:]+\]' panel/storage/logs/*.log | cut -c1-600 | tail -n 12 || true

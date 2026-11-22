@@ -1,0 +1,18 @@
+{
+    "id": "simplify-themes",
+    "name": "Simplify Themes",
+    "author": "jera",
+    "version": "2.0.0-beta.1-dev",
+    "description": "Make your own look for the panel: colours, background, fonts and shapes, with a live preview. Works best with Simplify.",
+    "category": "plugin",
+    "namespace": "Simplify\\Themes",
+    "class": "SimplifyThemesPlugin",
+    "panels": [
+        "admin",
+        "app",
+        "server"
+    ],
+    "panel_version": "^1.0.0-beta38",
+    "api_version": 1,
+    "update_url": "https://hub.pelican.dev/plugins/simplify-themes/update.json"
+}
