@@ -55,7 +55,7 @@ function step(string $what, callable $run): void
 }
 function visit(?User $user, string $url): TestResponse
 {
-    $client = new class(app())
+    $client = new class (app())
     {
         use InteractsWithAuthentication, InteractsWithSession, MakesHttpRequests;
 
@@ -138,8 +138,11 @@ step('the default theme is on every page, login included; Simplify\'s look adds 
     $page->callAction('makeDefault');
     Store::flush();
     must(Store::settings()['default'] === $page->get('themeId'), 'Make default did not set the default');
-    $login = visit(null, '/login')->getContent();
-    must(str_contains($login, '<style id="simplify-themes">') && str_contains($login, '--ps-surface:'), 'the login page has no theme');
+    // Livewire::actingAs signed the admin in: a guest sees the login page, a signed-in admin is sent on from it.
+    app('auth')->forgetGuards();
+    $response = visit(null, '/login');
+    $login = $response->getContent();
+    must(str_contains($login, '<style id="simplify-themes">') && str_contains($login, '--ps-surface:'), 'the login page has no theme (HTTP '.$response->getStatusCode().')');
     $app = visit($admin, Filament::getPanel('app')->getUrl());
     if ($app->isRedirect()) {
         $app = visit($admin, (string) $app->headers->get('Location'));
@@ -189,7 +192,7 @@ step('a picture is drawn again as WebP; anything else is refused', function () {
     }
 });
 
-step('a file a theme uses cannot be removed; an unused one can', function () use ($admin) {
+step('a file a theme uses cannot be removed; an unused one can', function () {
     $font = Files::all('font')[0];
     $theme = Store::themes()[0];
     Store::save($theme['id'], $theme['name'], ['font' => Fonts::uploadedKey($font['id'])] + $theme['data']);
@@ -232,7 +235,7 @@ step('people can pick a theme only while the admin lets them', function () use (
     Store::flush();
     must(Store::choice($member->id) === null, 'an unknown theme was stored as a pick');
     Store::saveSettings(Store::settings()['default'], false);
-    must(Store::active($member)['id'] === Store::settings()['default'], "a pick still counts after the admin closed picking");
+    must(Store::active($member)['id'] === Store::settings()['default'], 'a pick still counts after the admin closed picking');
 });
 
 step('the add-on is tagged and offers My theme while people may pick', function () use ($member) {
