@@ -142,12 +142,15 @@ step('switching themes with unsaved changes asks to save first', function () use
 
 step('the editor says when the theme it edits is not the one people see', function () use ($admin) {
     admin();
+    $settings = Store::settings();
+    $default = Store::themes()[0]['id'];
+    Store::saveSettings($default, $settings['pick']);
     $page = Livewire::actingAs($admin)->test(Themes::class);
-    $default = Store::settings()['default'];
     $other = collect(Store::themes())->firstWhere('id', '!=', $default)['id'];
     must(! str_contains((string) $page->instance()->getSubheading(), 'Not in use'), 'the default theme is called not in use');
     $page->call('pick', $other);
     must(str_contains((string) $page->instance()->getSubheading(), 'Not in use'), 'a theme people do not see is not marked');
+    Store::saveSettings($settings['default'], $settings['pick']);
 });
 
 step('the default theme is on every page, login included; Simplify\'s look adds nothing', function () use ($admin) {
