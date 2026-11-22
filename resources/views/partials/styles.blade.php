@@ -8,6 +8,9 @@
     .dark .st { --st-surface: var(--ps-surface, #18181b); --st-raised: var(--ps-raised, #27272a); --st-field: var(--ps-field, #18181b); --st-ink: var(--ps-ink, #fafafa);
         --st-muted: var(--ps-muted, #a1a1aa); --st-line: var(--ps-line, #ffffff1a); --st-warn: var(--ps-warn, #fbbf24); --st-ok: var(--ps-ok, #4ade80); --st-primary: var(--primary-500, #3b82f6); }
     [x-cloak] { display: none !important; }
+    /* "Make default" in the subtitle, which sits outside the form. */
+    .st-link { padding: 0; border: 0; background: none; color: var(--primary-600, #2563eb); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+    .dark .st-link { color: var(--primary-400, #60a5fa); }
     .st-i { width: 16px; height: 16px; flex: none; }
     .st-bar { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--st-line); }
     .st-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
@@ -76,6 +79,9 @@
     .st-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: var(--st-r); background: var(--st-raised); justify-self: start; }
     .st-seg button { display: inline-flex; align-items: center; padding: 5px 11px; border: 0; border-radius: 6px; background: none; color: var(--st-muted); font-size: 13px; font-weight: 600; cursor: pointer; }
     .st-seg button[aria-pressed="true"] { background: var(--st-surface); color: var(--st-ink); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+    .st-bgmode { margin-bottom: 10px; }
+    .st-bgmode button { gap: 6px; }
+    .st-file-meta .st-pill { margin-left: 6px; vertical-align: 1px; }
     .st-file { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--st-line); }
     .st-thumb { width: 44px; height: 32px; flex: none; border-radius: 6px; background: var(--st-raised) center / cover; }
     .st-aa { display: grid; place-items: center; font-size: 15px; font-weight: 700; }

@@ -127,16 +127,22 @@
                     <div class="st-sec">
                         <h3>{{ $t('tab_background') }}</h3>
                         <p class="st-hint">{{ $t('background_help') }}</p>
+                        {{-- Light and dark each have their own background; the preview's mode is the one being changed. --}}
+                        <div class="st-seg st-bgmode" role="group">
+                            @foreach (['light' => 'tabler-sun', 'dark' => 'tabler-moon'] as $bgMode => $bgIcon)
+                                <button type="button" data-bgmode="{{ $bgMode }}" x-on:click="mode = '{{ $bgMode }}'" :aria-pressed="mode === '{{ $bgMode }}'"><x-filament::icon :icon="$bgIcon" class="st-i" />{{ $t($bgMode) }} · <span x-text="bgNames[data.theme.{{ $bgMode === 'dark' ? 'bg_dark' : 'bg' }}]"></span></button>
+                            @endforeach
+                        </div>
                         <div class="st-choices">
                             @foreach (['plain', 'gradient', 'image'] as $kind)
-                                <button type="button" class="st-choice" data-bg="{{ $kind }}" x-on:click="data.theme.bg = '{{ $kind }}'" :aria-pressed="data.theme.bg === '{{ $kind }}'"
+                                <button type="button" class="st-choice" data-bg="{{ $kind }}" x-on:click="data.theme[bgKey()] = '{{ $kind }}'" :aria-pressed="data.theme[bgKey()] === '{{ $kind }}'"
                                     @if ($kind === 'image') :disabled="lib.images.length === 0" @endif>
                                     <b>{{ $t('bg_'.$kind) }}</b><small>{{ $t('bg_'.$kind.'_help') }}</small>
                                 </button>
                             @endforeach
                         </div>
                     </div>
-                    <div class="st-sec" x-show="data.theme.bg === 'gradient'">
+                    <div class="st-sec" x-show="data.theme[bgKey()] === 'gradient'">
                         <h3>{{ $t('gradient') }}</h3>
                         <p class="st-hint">{{ $t('gradient_help') }}</p>
                         <div class="st-gpre">
@@ -226,18 +232,16 @@
                         @forelse ($lib['images'] as $image)
                             <div class="st-file" wire:key="image-{{ $image['id'] }}">
                                 <span class="st-thumb" style="background-image: url('{{ $image['url'] }}')"></span>
-                                <span class="st-file-meta">{{ $image['name'] }}<small>{{ number_format($image['size'] / 1024) }} KB</small></span>
-                                <button type="button" class="st-btn" x-on:click="data.theme.image = {{ $image['id'] }}; data.theme.bg = 'image'" :aria-pressed="data.theme.image === {{ $image['id'] }}">{{ $t('use_light') }}</button>
-                                @if ($core)
-                                    <button type="button" class="st-btn" x-on:click="data.theme.image_dark = data.theme.image_dark === {{ $image['id'] }} ? null : {{ $image['id'] }}" :aria-pressed="data.theme.image_dark === {{ $image['id'] }}">{{ $t('use_dark') }}</button>
-                                @endif
+                                <span class="st-file-meta">{{ $image['name'] }} @if ($image['used'])<span class="st-pill is-ok">{{ $t('in_use') }}</span>@endif<small>{{ number_format($image['size'] / 1024) }} KB</small></span>
+                                {{-- For the mode being changed: light, or dark. --}}
+                                <button type="button" class="st-btn" x-on:click="usePicture({{ $image['id'] }})" :aria-pressed="picture() === {{ $image['id'] }} && data.theme[bgKey()] === 'image'">{{ $t('use_light') }}</button>
                                 {{ ($this->removeFileAction)(['id' => $image['id']]) }}
                             </div>
                         @empty
                             <p class="st-empty">{{ $t('pictures_none') }}</p>
                         @endforelse
                     </div>
-                    <div class="st-sec" x-show="data.theme.bg === 'image'">
+                    <div class="st-sec" x-show="data.theme[bgKey()] === 'image'">
                         <div class="st-field"><span>{{ $t('dim') }}</span><div class="st-range"><input type="range" min="0" max="80" x-model.number="data.theme.dim"><output x-text="data.theme.dim + '%'"></output></div></div>
                         <div class="st-field"><span>{{ $t('blur') }}</span><div class="st-range"><input type="range" min="0" max="20" x-model.number="data.theme.blur"><output x-text="data.theme.blur + 'px'"></output></div></div>
                         <div class="st-field"><span>{{ $t('fit') }}</span>
@@ -249,7 +253,7 @@
                         </div>
                     </div>
                     @if ($core)
-                        <div class="st-sec" x-show="data.theme.bg !== 'plain'">
+                        <div class="st-sec" x-show="data.theme.bg !== 'plain' || data.theme.bg_dark !== 'plain'">
                             <div class="st-field"><span>{{ $t('glass') }}<small>{{ $t('glass_help') }}</small></span><div class="st-range"><input type="range" min="0" max="50" x-model.number="data.theme.glass"><output x-text="data.theme.glass + '%'"></output></div></div>
                         </div>
                     @endif
@@ -276,7 +280,7 @@
                         @forelse ($lib['uploaded'] as $font)
                             <div class="st-file" wire:key="font-{{ $font['id'] }}">
                                 <span class="st-thumb st-aa" style="font-family: {{ $font['stack'] }}">Aa</span>
-                                <span class="st-file-meta">{{ $font['label'] }}<small>{{ number_format($font['size'] / 1024) }} KB</small></span>
+                                <span class="st-file-meta">{{ $font['label'] }} @if ($font['used'])<span class="st-pill is-ok">{{ $t('in_use') }}</span>@endif<small>{{ number_format($font['size'] / 1024) }} KB</small></span>
                                 {{ ($this->removeFileAction)(['id' => $font['id']]) }}
                             </div>
                         @empty
@@ -339,7 +343,7 @@
                     <button type="button" class="st-btn st-close" x-on:click="sheet = false" aria-label="{{ $t('close') }}"><x-filament::icon icon="tabler-x" class="st-i" /></button>
                 </div>
                 <div class="st-pv" :style="vars()">
-                    <div class="st-pv-bg" x-show="data.theme.bg === 'image' && pictureUrl()" :style="{ backgroundImage: 'linear-gradient(' + veil() + ', ' + veil() + '), url(' + pictureUrl() + ')', filter: 'blur(' + data.theme.blur + 'px)', backgroundSize: data.theme.fit === 'fit' ? 'contain' : (data.theme.fit === 'tile' ? 'auto' : 'cover'), backgroundRepeat: data.theme.fit === 'tile' ? 'repeat' : 'no-repeat' }"></div>
+                    <div class="st-pv-bg" x-show="data.theme[bgKey()] === 'image' && pictureUrl()" :style="{ backgroundImage: 'linear-gradient(' + veil() + ', ' + veil() + '), url(' + pictureUrl() + ')', filter: 'blur(' + data.theme.blur + 'px)', backgroundSize: data.theme.fit === 'fit' ? 'contain' : (data.theme.fit === 'tile' ? 'auto' : 'cover'), backgroundRepeat: data.theme.fit === 'tile' ? 'repeat' : 'no-repeat' }"></div>
                     <canvas class="st-pv-fx" aria-hidden="true"></canvas>
                     @if ($core)
                         <div class="st-pv-in">
@@ -527,20 +531,28 @@
             },
             // Fade: the light background colour over the picture in light mode, black in dark mode (as on the panel).
             veil() { const [r, g, b] = this.mode === 'light' ? this.rgb(this.data.theme.light.bg) : [0, 0, 0]; return 'rgb(' + r + ' ' + g + ' ' + b + ' / ' + (this.data.theme.dim / 100) + ')'; },
-            pictureUrl() {
+            bgNames: @js(['plain' => $t('bg_plain'), 'gradient' => $t('bg_gradient'), 'image' => $t('bg_image')]),
+            bgKey() { return this.mode === 'dark' ? 'bg_dark' : 'bg'; },
+            // The picture of the mode being changed: dark falls back to the light one.
+            picture() { const t = this.data.theme; return this.mode === 'dark' && t.image_dark ? t.image_dark : t.image; },
+            usePicture(id) {
                 const t = this.data.theme;
-                const id = this.mode === 'dark' && t.image_dark ? t.image_dark : t.image;
+                if (this.mode === 'dark') t.image_dark = id; else t.image = id;
+                t[this.bgKey()] = 'image';
+            },
+            pictureUrl() {
+                const id = this.picture();
                 const image = this.lib.images.find(i => i.id === id);
                 return image ? image.url : '';
             },
             vars() {
                 const t = this.data.theme, p = this.palette();
-                const glass = core && t.bg !== 'plain' ? t.glass : 0;
+                const glass = core && t[this.bgKey()] !== 'plain' ? t.glass : 0;
                 const shadow = { none: 'none', soft: '0 4px 14px rgb(0 0 0 / .12)', strong: '0 10px 28px rgb(0 0 0 / .28)' }[core ? t.shadow : 'soft'];
                 const line = !core ? p.line : t.lines === 'subtle' ? this.mix(p.line, p.surface, .45) : t.lines === 'strong' ? this.mix(p.line, p.ink, .18) : p.line;
                 const follow = core && t.console === 'follow';
                 return {
-                    '--pv-bg': t.bg === 'gradient' ? this.gradCss(this.g(), false) : p.bg,
+                    '--pv-bg': t[this.bgKey()] === 'gradient' ? this.gradCss(this.g(), false) : p.bg,
                     '--pv-surface': glass ? `color-mix(in srgb, ${p.surface} ${100 - glass}%, transparent)` : p.surface,
                     '--pv-raised': p.raised, '--pv-ink': p.ink, '--pv-muted': p.muted, '--pv-line': line,
                     '--pv-accent': p.accent, '--pv-on': this.on(p.accent), '--pv-ok': p.ok, '--pv-warn': p.warn, '--pv-danger': p.danger,
