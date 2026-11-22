@@ -21,7 +21,7 @@ jobs:
         with:
           php-version: '8.3'
           tools: pint
-      - run: pint --test
+      - run: pint --test -v
   # Installs the add-on in a real Pelican panel, with and without Simplify, and goes through what it does.
   panel-smoke:
     runs-on: ubuntu-latest

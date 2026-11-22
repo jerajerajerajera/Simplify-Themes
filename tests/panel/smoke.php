@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
 use Simplify\Themes\Filament\Admin\Pages\Themes;
@@ -55,7 +56,7 @@ function step(string $what, callable $run): void
 }
 function visit(?User $user, string $url): TestResponse
 {
-    $client = new class (app())
+    $client = new class(app())
     {
         use InteractsWithAuthentication, InteractsWithSession, MakesHttpRequests;
 
@@ -180,7 +181,7 @@ step('a picture is drawn again as WebP; anything else is refused', function () {
     $id = Files::storeImage(UploadedFile::fake()->createWithContent('harbour.png', $png.'<?php echo 1; ?>'));
     $row = collect(Files::all('image'))->firstWhere('id', $id);
     must(str_ends_with($row['file'], '.webp'), 'the picture is not stored as WebP');
-    $stored = Illuminate\Support\Facades\Storage::disk('local')->get(Files::DIRECTORY.'/'.$row['file']);
+    $stored = Storage::disk('local')->get(Files::DIRECTORY.'/'.$row['file']);
     $size = getimagesizefromstring($stored);
     must($size[0] === 2560 && $size[1] === 1280 && ! str_contains($stored, '<?php'), 'the picture was not resized or still holds the hidden text');
     must(visit(null, '/simplify-themes/file/'.$row['file'])->headers->get('Content-Type') === 'image/webp', 'the picture is not served as WebP');
