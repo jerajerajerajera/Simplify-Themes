@@ -76,6 +76,16 @@ check(substr_count($css, '{') === substr_count($css, '}'), 'braces are balanced'
 $plain = Css::build($clean([]), $url, [], []);
 check(! str_contains($plain, '@font-face') && ! str_contains($plain, 'background:'), "Simplify's own look adds no fonts and no background");
 $pic = Css::build($clean(['bg' => 'image', 'image' => 3, 'blur' => 8, 'dim' => 30]), $url, [], [3 => '/simplify-themes/file/'.str_repeat('a', 32).'.webp']);
+// TH-B16: text straight on a loud gradient or a picture gets a soft edge in the background's colour; on a calm one nothing.
+$loud = Presets::ready()['Ocean night'];
+$loud['bg_dark'] = 'gradient';
+$loud['grad']['dark']['stops'] = [['c' => '#0b1020', 'p' => 0], ['c' => '#fde047', 'p' => 50], ['c' => '#f97316', 'p' => 100]];
+$loud['grad']['dark']['mids'] = [50, 50, 50];
+$loudCss = Css::build($clean($loud), $url, [], []);
+check(str_contains($loudCss, 'html.dark :is(.ps-admin-side') && str_contains($loudCss, 'text-shadow:0 0 2px '.$loud['dark']['bg']), 'text on a loud dark gradient gets an edge in the dark background colour');
+check(! str_contains($loudCss, 'html:not(.dark) :is(.ps-admin-side'), 'a calm light gradient gets no edge');
+check(! str_contains($css, 'text-shadow') && ! str_contains($plain, 'text-shadow'), 'Ocean night and a plain background get no edge');
+check(str_contains($pic, 'html:not(.dark) :is(.ps-admin-side'), 'text over a picture with little fade gets an edge');
 check(str_contains($pic, 'html:root:not(.dark)::before') && str_contains($pic, 'html:root.dark::before') && str_contains($pic, 'blur(8px)'), 'a picture background is drawn behind everything, blurred');
 // TH-B6/B7: over a gradient or a picture the Admin page's box is a card, title band included; a plain one stays as the core draws it.
 check(str_contains($css, '.fi-main-ctn{background:var(--ps-surface) !important') && str_contains($pic, '.fi-main .fi-header{background:var(--ps-surface) !important'), 'over a gradient or picture the admin page is one card with its title band');
