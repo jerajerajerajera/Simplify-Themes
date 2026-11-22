@@ -61,7 +61,25 @@ final class Css
             $css .= ':is(h1, h2, h3, .fi-header-heading, .fi-section-header-heading, .fi-modal-heading){font-family:'.Fonts::stack($t['head'], $names).'}';
         }
 
-        return $css.self::background($t, $images).Effects::css($t);
+        return $css.self::background($t, $images).self::card($t).Effects::css($t);
+    }
+
+    /**
+     * Simplify's admin pages lie straight on the page's background, under a title band in that background's colour.
+     * Over a gradient or a picture that text is hard to read and the band is a block of another colour, so the box
+     * the page scrolls in (one card, P-8) gets the cards' colour, and its title band with it.
+     */
+    private static function card(array $t): string
+    {
+        if ($t['bg'] === 'plain') {
+            return '';
+        }
+        $shell = 'html.ps-shell:not(.ps-frame) .fi-layout>.fi-main-ctn';
+        $blur = $t['glass'] > 0 ? ';backdrop-filter:blur(14px)' : '';
+
+        return $shell.'{background:var(--ps-surface) !important;border:1px solid var(--ps-line);border-radius:var(--ps-radius-lg)}'
+            .'html.ps-shell-menu:not(.ps-frame) .fi-layout>.fi-main-ctn::before,html.ps-shell-menu:not(.ps-frame) .fi-main .fi-header{background:var(--ps-surface) !important'.$blur.'}'
+            .':root{--st-band:var(--ps-surface)}';
     }
 
     /** @return array<string, string> */
@@ -96,8 +114,10 @@ final class Css
             $a = $dark ? [.45, .6, .7] : [.12, .18, .28];
             $out += ['--ps-shadow-sm' => "0 1px 3px rgb(0 0 0 / {$a[0]})", '--ps-shadow' => "0 8px 24px rgb(0 0 0 / {$a[1]})", '--ps-shadow-lg' => "0 18px 44px rgb(0 0 0 / {$a[2]})"];
         }
+        // Following the theme, the console's card (--ps-console-card, newer Simplify) and its command line share one colour;
+        // "black" leaves Simplify's own dark console as it is.
         if ($t['console'] === 'follow') {
-            $out += ['--ps-console-bg' => $p['surface'], '--ps-console-raised' => $p['raised'], '--ps-console-line' => $p['line'], '--ps-console-ink' => $p['ink'], '--ps-console-muted' => $p['muted']];
+            $out += ['--ps-console-card' => $p['surface'], '--ps-console-bg' => $p['surface'], '--ps-console-raised' => $p['raised'], '--ps-console-line' => $p['line'], '--ps-console-ink' => $p['ink'], '--ps-console-muted' => $p['muted']];
         }
 
         return $out;
