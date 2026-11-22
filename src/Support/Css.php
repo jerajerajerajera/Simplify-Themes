@@ -77,8 +77,8 @@ final class Css
         $shell = 'html.ps-shell:not(.ps-frame) .fi-layout>.fi-main-ctn';
         $blur = $t['glass'] > 0 ? ';backdrop-filter:blur(14px)' : '';
 
-        return $shell.'{background:var(--ps-surface);border:1px solid var(--ps-line);border-radius:var(--ps-radius-lg)}'
-            .'html.ps-shell-menu:not(.ps-frame) .fi-layout>.fi-main-ctn::before,html.ps-shell-menu:not(.ps-frame) .fi-main .fi-header{background:var(--ps-surface)'.$blur.'}'
+        return $shell.'{background:var(--ps-surface) !important;border:1px solid var(--ps-line);border-radius:var(--ps-radius-lg)}'
+            .'html.ps-shell-menu:not(.ps-frame) .fi-layout>.fi-main-ctn::before,html.ps-shell-menu:not(.ps-frame) .fi-main .fi-header{background:var(--ps-surface) !important'.$blur.'}'
             .':root{--st-band:var(--ps-surface)}';
     }
 

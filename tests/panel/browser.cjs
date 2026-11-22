@@ -156,8 +156,8 @@ async function run(browser, viewport, scheme, saves) {
     if (await more.count()) {
       await more.click();
       await sleep(400);
-      const words = await page.evaluate(() => [...document.querySelectorAll('.fi-dropdown-panel .fi-dropdown-list-item')].filter((el) => el.offsetParent !== null).map((el) => el.innerText.trim()));
-      say('the ⋯ menu shows its words', words.length > 2 && words.every((w) => w.length > 1), { words });
+      const words = await page.evaluate(() => [...document.querySelectorAll('.fi-dropdown-panel .fi-dropdown-list-item')].filter((el) => el.getClientRects().length > 0).map((el) => el.innerText.trim()));
+      say('the ⋯ menu shows its words', words.length > 2 && words.every((w) => w.length > 1), { words, items: await page.locator('.fi-dropdown-list-item').count() });
       await shot('editor-more');
       await page.keyboard.press('Escape');
       await sleep(200);

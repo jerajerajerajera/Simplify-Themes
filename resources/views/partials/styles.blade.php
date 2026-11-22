@@ -161,10 +161,10 @@
     /* In Simplify's Admin page the page scrolls in its card under a title band of 52px: the tabs stay under the band and
        the preview beside them, in sight however far the editor scrolls. */
     @media (min-width: 601px) {
-        html.ps-shell-menu:not(.ps-frame) .st-core .st-bar { position: sticky; top: 52px; z-index: 9; background: var(--st-band, var(--s-bg, var(--st-surface))); }
+        html.ps-shell-menu:not(.ps-frame) .st-core .st-bar { position: sticky; top: var(--st-top, 52px); z-index: 9; background: var(--st-band, var(--s-bg, var(--st-surface))); }
     }
     @media (min-width: 901px) {
-        html.ps-shell-menu:not(.ps-frame) .st-core .st-side { top: 98px; height: min(560px, calc(100dvh - 210px)); }
+        html.ps-shell-menu:not(.ps-frame) .st-core .st-side { top: calc(var(--st-top, 52px) + 46px); height: min(560px, calc(100dvh - var(--st-top, 52px) - 160px)); }
     }
 
     /* Without Simplify the page looks like Pelican's own: sections are cards on the grey page. */

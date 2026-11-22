@@ -402,6 +402,10 @@
                 this.readLib();
                 new MutationObserver(() => this.readLib()).observe(this.$root, { childList: true, subtree: true, characterData: true });
                 this.remember();
+                // In Simplify's Admin page the title band (breadcrumb, buttons, subtitle) stays on top while the card
+                // scrolls: the tabs and the preview stay right under it, however tall it is.
+                const head = document.querySelector('.fi-main .fi-header');
+                if (head && window.ResizeObserver) new ResizeObserver(() => this.$root.style.setProperty('--st-top', head.offsetHeight + 'px')).observe(head);
                 // The moving background: the effect tiles and the live preview share the panel's own drawing script.
                 const start = () => {
                     this.$root.querySelectorAll('.st-fx-thumb').forEach((cv) => window.SimplifyThemesFx.run(cv, () => this.effect(cv.dataset.fx, true)));
