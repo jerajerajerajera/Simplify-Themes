@@ -164,7 +164,7 @@
         html.ps-shell-menu:not(.ps-frame) .st-core .st-bar { position: sticky; top: var(--st-top, 52px); z-index: 9; background: var(--st-band, var(--s-bg, var(--st-surface))); }
     }
     @media (min-width: 901px) {
-        html.ps-shell-menu:not(.ps-frame) .st-core .st-side { top: calc(var(--st-top, 52px) + 46px); height: min(560px, calc(100dvh - var(--st-top, 52px) - 160px)); }
+        html.ps-shell-menu:not(.ps-frame) .st-core .st-side { top: calc(var(--st-top, 52px) + 46px); height: min(560px, calc(100dvh - var(--st-top, 52px) - 310px)); }
     }
 
     /* Without Simplify the page looks like Pelican's own: sections are cards on the grey page. */
