@@ -8,6 +8,8 @@
 | Nr | Datum | Wat zag de gebruiker | Oorzaak | Fix (versie) | Regressietest | Teruggekomen | Regel |
 |---|---|---|---|---|---|---|---|
 | B9 | 22-11 | (Patroon van andere add-ons.) Instellingspagina scrolt als geheel met Simplify | Formulier zonder `s-fit` | Eerste versie | `tests/panel/smoke.php` stap "the Themes page renders for a root admin…" (controleert `s-fit`) en `tests/panel/browser.cjs` "the page never scrolls (P-7)" | 0× | P-7 |
+| TH-B1 | 22-11 | (Eerste CI-screenshots.) De themategels tonen hun mini-voorbeeld als smalle strook links in plaats van over de hele tegel, met en zonder kern | De kinderen van de knop rekten niet mee: de breedte van `.st-mini` en `.st-tile-info` volgde hun inhoud | Eerste versie: tegel `align-items: stretch`, kinderen `width: 100%` | `tests/panel/browser.cjs`: "a theme tile shows its preview across the tile" (rood te zien op de screenshots van 492c701) | 0× | P-31 |
+| TH-B2 | 22-11 | (Eerste CI-screenshots.) Op een telefoon staat het live voorbeeld half over de editor terwijl het dicht hoort te zijn, met en zonder kern | Het blad is `position: fixed` met `translateY(105%)`; binnen een voorouder met transform of eigen scrollvak valt het dan niet buiten beeld | Eerste versie: dicht blad ook `visibility: hidden` | `tests/panel/browser.cjs`: "the preview sheet is hidden until opened" (rood te zien op de screenshots van 492c701) | 0× | P-9 |
 
 ## Patronen
 

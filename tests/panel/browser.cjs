@@ -52,6 +52,11 @@ async function run(browser, viewport, scheme, saves) {
     await goto('/admin/simplify-themes');
     say('the editor opens', await page.locator('form.st').count() === 1, { url: page.url() });
     if (core && !phone) say('the page never scrolls (P-7)', await scrolls() <= 1, { overflow: await scrolls() });
+    // TH-B1: every tile shows its mini preview across the whole tile, not as a strip on its left.
+    const tile = await page.locator('.st-tile').first().evaluate((el) => [el.getBoundingClientRect().width, el.querySelector('.st-mini').getBoundingClientRect().width]).catch(() => [0, 0]);
+    say('a theme tile shows its preview across the tile', tile[0] > 0 && tile[1] >= tile[0] - 4, { tile: tile[0], preview: tile[1] });
+    // TH-B2: on a phone the preview is a sheet that stays out of sight until Live preview opens it.
+    if (phone) say('the preview sheet is hidden until opened', !(await page.locator('.st-side').isVisible()));
     for (const tab of TABS) {
       const button = page.locator('.st-tab').nth(TABS.indexOf(tab));
       await button.scrollIntoViewIfNeeded().catch(() => {});
@@ -77,10 +82,10 @@ async function run(browser, viewport, scheme, saves) {
       const name = `Harbour ${Date.now() % 10000}`;
       await page.fill('#st-name', name);
       await sleep(400);
-      say('a change shows "Changes made"', await page.getByText('Changes made').first().isVisible().catch(() => false));
+      say('a change shows "Changes made"', await page.locator(':text("Changes made"):visible').first().waitFor({ timeout: 5000 }).then(() => true).catch(() => false));
       await shot('editor-changed');
       await save.click();
-      await page.getByText('Saved').first().waitFor({ timeout: 10000 }).catch(() => {});
+      await page.locator(':text("Saved"):visible').first().waitFor({ timeout: 10000 }).catch(() => {});
       await goto('/admin/simplify-themes');
       say('Save keeps the change', (await page.inputValue('#st-name').catch(() => '')) === name);
     }

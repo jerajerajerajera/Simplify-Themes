@@ -50,12 +50,12 @@
     .st-choice small { color: var(--st-muted); font-size: 12px; }
     .st-sample { font-size: 21px; line-height: 1.15; }
     .st-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
-    .st-tile { display: flex; flex-direction: column; padding: 0; overflow: hidden; border: 1px solid var(--st-line); border-radius: var(--st-r); background: var(--st-surface); color: inherit; text-align: left; cursor: pointer; }
+    .st-tile { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: 0; overflow: hidden; border: 1px solid var(--st-line); border-radius: var(--st-r); background: var(--st-surface); color: inherit; text-align: left; cursor: pointer; }
     .st-tile[aria-pressed="true"] { border-color: var(--st-primary); box-shadow: 0 0 0 1px var(--st-primary); }
-    .st-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; height: 74px; padding: 10px; align-content: end; }
+    .st-mini { box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; height: 74px; padding: 10px; align-content: end; }
     .st-mini i { position: relative; height: 28px; border: 1px solid; border-radius: 6px; }
     .st-mini b { position: absolute; right: 6px; bottom: 6px; width: 20px; height: 7px; border-radius: 4px; }
-    .st-tile-info { padding: 8px 12px; border-top: 1px solid var(--st-line); }
+    .st-tile-info { box-sizing: border-box; width: 100%; padding: 8px 12px; border-top: 1px solid var(--st-line); }
     .st-tile-info b { display: block; font-size: 13px; }
     .st-tile-info small { display: block; min-height: 1.3em; color: var(--st-muted); font-size: 12px; }
     .st-field { display: grid; grid-template-columns: 160px minmax(0, 1fr); align-items: center; gap: 10px; padding: 9px 0; }
@@ -137,8 +137,8 @@
         .st-pelican .st-edit { padding-right: 0; }
         .st-peek { display: inline-flex; }
         .st-close { display: inline-flex; }
-        .st-side { position: fixed; inset: auto 0 0 0; top: 90px; z-index: 40; height: auto; padding: 10px 14px 18px; border: 0; border-radius: 20px 20px 0 0; background: var(--st-surface); box-shadow: 0 -10px 40px rgb(0 0 0 / .25); transform: translateY(105%); transition: transform .2s; }
-        .st-side.is-open { transform: none; }
+        .st-side { position: fixed; inset: auto 0 0 0; top: 90px; z-index: 40; height: auto; padding: 10px 14px 18px; border: 0; border-radius: 20px 20px 0 0; background: var(--st-surface); box-shadow: 0 -10px 40px rgb(0 0 0 / .25); transform: translateY(105%); visibility: hidden; pointer-events: none; transition: transform .2s, visibility 0s .2s; }
+        .st-side.is-open { transform: none; visibility: visible; pointer-events: auto; transition: transform .2s; }
         .st-scrim { position: fixed; inset: 0; z-index: 39; display: block; background: rgb(0 0 0 / .35); }
         .st-colhead, .st-row { grid-template-columns: 96px 1fr 1fr; gap: 6px; }
         .st-row-one { grid-template-columns: 110px minmax(0, 1fr); }
