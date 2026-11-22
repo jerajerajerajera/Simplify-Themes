@@ -22,8 +22,8 @@ shadows, see-through cards and the console.
   danger), each with a light and a dark value, and a readability check against WCAG AA (4.5:1). Without Simplify five
   colours (accent, grey tint, running, warning, danger), from which Pelican makes its full palette. A warning never
   blocks Save.
-- **Background**: plain, your own gradient (2 to 6 colours with how softly they blend, linear, radial or conic, an angle
-  dial, and a seamless repeat; light and dark each have their own), or one of your pictures (also a separate one for dark), with fade (a light veil in light mode, a dark one in dark mode), blur and fit.
+- **Background**, for light and dark each: plain, your own gradient (2 to 6 colours with how softly they blend, linear, radial or conic, an angle
+  dial, and a seamless repeat), or one of your pictures, with fade (a light veil in light mode, a dark one in dark mode), blur and fit.
 - **Effect**: a moving background behind every page: shooting stars, snow, fireflies, rain, aurora or bubbles, with
   amount, speed, size, strength, glow, a direction dial and the theme's colours or your own. It pauses while the panel
   is not on screen, stays still for people who ask their device for less motion, and draws less on a phone.

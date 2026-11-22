@@ -140,6 +140,19 @@ step('switching themes with unsaved changes asks to save first', function () use
     must(DB::table(Store::THEMES)->count() === $count, 'New theme ran over unsaved changes');
 });
 
+step('the editor says when the theme it edits is not the one people see', function () use ($admin) {
+    admin();
+    $settings = Store::settings();
+    $default = Store::themes()[0]['id'];
+    Store::saveSettings($default, $settings['pick']);
+    $page = Livewire::actingAs($admin)->test(Themes::class);
+    $other = collect(Store::themes())->firstWhere('id', '!=', $default)['id'];
+    must(! str_contains((string) $page->instance()->getSubheading(), 'Not in use'), 'the default theme is called not in use');
+    $page->call('pick', $other);
+    must(str_contains((string) $page->instance()->getSubheading(), 'Not in use'), 'a theme people do not see is not marked');
+    Store::saveSettings($settings['default'], $settings['pick']);
+});
+
 step('the default theme is on every page, login included; Simplify\'s look adds nothing', function () use ($admin) {
     admin();
     Store::saveSettings(null, false);
@@ -223,8 +236,10 @@ step('export and import give the same theme back', function () use ($admin) {
     must(DB::table(Store::THEMES)->count() === $count + 1 && $imported !== null, 'the import did not add a theme');
     $expect = $theme;
     $expect['image'] = $expect['image_dark'] = null;
-    if ($expect['bg'] === 'image') {
-        $expect['bg'] = 'plain';
+    foreach (['bg', 'bg_dark'] as $key) {
+        if ($expect[$key] === 'image') {
+            $expect[$key] = 'plain';
+        }
     }
     must($imported['data'] == $expect, 'the imported theme differs');
 });

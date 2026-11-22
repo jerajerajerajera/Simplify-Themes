@@ -11,6 +11,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use RuntimeException;
@@ -64,9 +65,16 @@ final class Themes extends Page
         return __(self::T.'title');
     }
 
-    public function getSubheading(): string
+    /** What the page is for, or, while the theme being edited is not the one people see, which one they do see. */
+    public function getSubheading(): string|HtmlString
     {
-        return __(self::T.'subtitle');
+        $default = Store::settings()['default'];
+        if ($this->themeId === null || $default === $this->themeId) {
+            return __(self::T.'subtitle');
+        }
+        $seen = $default === null ? 'Simplify' : (Store::find($default)['name'] ?? 'Simplify');
+
+        return new HtmlString(e(__(self::T.'not_in_use', ['name' => $seen])).' <button type="button" class="st-link" wire:click="mountAction(\'makeDefault\')">'.e(__(self::T.'make_default')).'</button>');
     }
 
     public function mount(): void
@@ -156,9 +164,9 @@ final class Themes extends Page
         foreach (Files::all() as $file) {
             if ($file['kind'] === 'font') {
                 $uploadedFonts[] = ['id' => $file['id'], 'key' => Fonts::uploadedKey($file['id']), 'label' => $file['name'], 'stack' => Fonts::stack(Fonts::uploadedKey($file['id']), [$file['id'] => $file['name']]),
-                    'size' => $file['size'], 'faces' => [['family' => Fonts::uploadedFamily($file['name']), 'url' => Files::url($file['file']), 'weight' => '100 900', 'format' => str_ends_with($file['file'], '.ttf') ? 'truetype' : 'woff2']]];
+                    'size' => $file['size'], 'used' => Files::inUse($file['id'], 'font'), 'faces' => [['family' => Fonts::uploadedFamily($file['name']), 'url' => Files::url($file['file']), 'weight' => '100 900', 'format' => str_ends_with($file['file'], '.ttf') ? 'truetype' : 'woff2']]];
             } else {
-                $images[] = ['id' => $file['id'], 'name' => $file['name'], 'url' => Files::url($file['file']), 'size' => $file['size']];
+                $images[] = ['id' => $file['id'], 'name' => $file['name'], 'url' => Files::url($file['file']), 'size' => $file['size'], 'used' => Files::inUse($file['id'], 'image')];
             }
         }
 
@@ -245,8 +253,9 @@ final class Themes extends Page
                 }
                 try {
                     $id = Files::storeImage($file);
-                    $this->data['theme'][($arguments['dark'] ?? false) ? 'image_dark' : 'image'] = $id;
-                    $this->data['theme']['bg'] = 'image';
+                    $dark = (bool) ($arguments['dark'] ?? false);
+                    $this->data['theme'][$dark ? 'image_dark' : 'image'] = $id;
+                    $this->data['theme'][$dark ? 'bg_dark' : 'bg'] = 'image';
                 } catch (RuntimeException $e) {
                     Notification::make()->title(__(self::T.$e->getMessage()))->danger()->send();
                 }

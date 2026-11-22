@@ -132,6 +132,18 @@ async function run(browser, viewport, scheme, saves) {
       if (bar) await page.mouse.click(bar.x + bar.width * .3, bar.y + bar.height / 2);
       await sleep(300);
       say('a click on the gradient bar adds a colour', await page.locator('.st-gstop').count() === before + 1, { before, after: await page.locator('.st-gstop').count() });
+      // Light and dark each keep their own background: plain in the other mode leaves this one's gradient.
+      const here = await page.locator('[data-bgmode][aria-pressed="true"]').getAttribute('data-bgmode');
+      const there = here === 'dark' ? 'light' : 'dark';
+      await page.locator(`[data-bgmode="${there}"]`).click();
+      await page.locator('[data-bg="plain"]').click();
+      await page.locator(`[data-bgmode="${here}"]`).click();
+      await sleep(200);
+      say('light and dark keep their own background', (await page.locator('[data-bg="gradient"]').getAttribute('aria-pressed')) === 'true');
+      await page.locator(`[data-bgmode="${there}"]`).click();
+      await page.locator('[data-bg="gradient"]').click();
+      await page.locator(`[data-bgmode="${here}"]`).click();
+      await sleep(200);
       // TH-B9: Repeat on and off again before anything else changed puts the colours back where they were.
       const placed = await stops();
       await page.locator('.st-repeat').click();

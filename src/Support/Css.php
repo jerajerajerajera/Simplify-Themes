@@ -71,15 +71,24 @@ final class Css
      */
     private static function card(array $t): string
     {
-        if ($t['bg'] === 'plain') {
-            return '';
+        $css = '';
+        foreach (['light' => ':not(.dark)', 'dark' => '.dark'] as $mode => $is) {
+            if (self::bg($t, $mode) === 'plain') {
+                continue;
+            }
+            $blur = $t['glass'] > 0 ? ';backdrop-filter:blur(14px)' : '';
+            $css .= 'html.ps-shell'.$is.':not(.ps-frame) .fi-layout>.fi-main-ctn{background:var(--ps-surface) !important;border:1px solid var(--ps-line);border-radius:var(--ps-radius-lg)}'
+                .'html.ps-shell-menu'.$is.':not(.ps-frame) .fi-layout>.fi-main-ctn::before,html.ps-shell-menu'.$is.':not(.ps-frame) .fi-main .fi-header{background:var(--ps-surface) !important'.$blur.'}'
+                .'html'.$is.'{--st-band:var(--ps-surface)}';
         }
-        $shell = 'html.ps-shell:not(.ps-frame) .fi-layout>.fi-main-ctn';
-        $blur = $t['glass'] > 0 ? ';backdrop-filter:blur(14px)' : '';
 
-        return $shell.'{background:var(--ps-surface) !important;border:1px solid var(--ps-line);border-radius:var(--ps-radius-lg)}'
-            .'html.ps-shell-menu:not(.ps-frame) .fi-layout>.fi-main-ctn::before,html.ps-shell-menu:not(.ps-frame) .fi-main .fi-header{background:var(--ps-surface) !important'.$blur.'}'
-            .':root{--st-band:var(--ps-surface)}';
+        return $css;
+    }
+
+    /** The background kind of one mode: plain, gradient or image. @param array<string, mixed> $t */
+    private static function bg(array $t, string $mode): string
+    {
+        return $mode === 'dark' ? $t['bg_dark'] : $t['bg'];
     }
 
     /** @return array<string, string> */
@@ -92,7 +101,7 @@ final class Css
             'strong' => Colour::mix($p['line'], $p['ink'], .18),
             default => $p['line'],
         };
-        $surface = $t['glass'] > 0 && $t['bg'] !== 'plain'
+        $surface = $t['glass'] > 0 && self::bg($t, $mode) !== 'plain'
             ? 'color-mix(in srgb, '.$p['surface'].' '.(100 - $t['glass']).'%, transparent)'
             : $p['surface'];
         $out = [
@@ -123,20 +132,9 @@ final class Css
         return $out;
     }
 
-    /** The page behind everything: a gradient or a picture. A plain background needs nothing: --ps-bg and Filament's grey already paint it. */
+    /** The page behind everything, per mode: a gradient or a picture. A plain background needs nothing: --ps-bg and Filament's grey already paint it. */
     private static function background(array $t, array $images): string
     {
-        if ($t['bg'] === 'gradient') {
-            $css = '';
-            foreach (['light' => ':root:root:root:not(.dark)', 'dark' => ':root:root:root.dark'] as $mode => $selector) {
-                $css .= $selector.'{background:'.Gradient::css($t['grad'][$mode]).' fixed !important}';
-            }
-
-            return $css.'html:root body{background:transparent !important}';
-        }
-        if ($t['bg'] !== 'image' || ! isset($images[$t['image']])) {
-            return '';
-        }
         $size = ['fill' => 'center / cover no-repeat', 'fit' => 'center / contain no-repeat', 'tile' => 'top left / auto repeat'][$t['fit']];
         // Fade lays the mode's own background colour over the picture: light in light mode, so text outside the cards
         // (filters, footer) stays readable on a bright panel; dark in dark mode.
@@ -146,12 +144,20 @@ final class Css
 
             return $fade.', url("'.addcslashes($url, '"\\').'") '.$size;
         };
-        $dark = $t['image_dark'] !== null && isset($images[$t['image_dark']]) ? $images[$t['image_dark']] : $images[$t['image']];
-        $css = 'html:root::before{content:"";position:fixed;inset:'.(-2 * $t['blur']).'px;z-index:-1;pointer-events:none;background:'.$layer($images[$t['image']], $t['light']['bg'])
-            .($t['blur'] > 0 ? ';filter:blur('.$t['blur'].'px)' : '').'}';
-        $css .= 'html:root.dark::before{background:'.$layer($dark, '#000000').'}';
+        $css = '';
+        foreach (['light' => ':not(.dark)', 'dark' => '.dark'] as $mode => $is) {
+            $kind = self::bg($t, $mode);
+            if ($kind === 'gradient') {
+                $css .= ':root:root:root'.$is.'{background:'.Gradient::css($t['grad'][$mode]).' fixed !important}';
+            }
+            $id = $mode === 'dark' && $t['image_dark'] !== null && isset($images[$t['image_dark']]) ? $t['image_dark'] : $t['image'];
+            if ($kind === 'image' && $id !== null && isset($images[$id])) {
+                $css .= 'html:root'.$is.'::before{content:"";position:fixed;inset:'.(-2 * $t['blur']).'px;z-index:-1;pointer-events:none;background:'
+                    .$layer($images[$id], $mode === 'dark' ? '#000000' : $t['light']['bg']).($t['blur'] > 0 ? ';filter:blur('.$t['blur'].'px)' : '').'}';
+            }
+        }
 
-        return $css.'html:root body{background:transparent !important}';
+        return $css === '' ? '' : $css.'html:root body{background:transparent !important}';
     }
 
     /** @param  array<int, array{name: string, url: string, format: string}>  $uploaded */

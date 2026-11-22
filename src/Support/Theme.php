@@ -15,7 +15,9 @@ final class Theme
     public const ROLES = ['accent', 'bg', 'surface', 'raised', 'ink', 'muted', 'line', 'ok', 'warn', 'danger'];
 
     public const CHOICES = [
+        // The background of light and of dark mode, each its own.
         'bg' => ['plain', 'gradient', 'image'],
+        'bg_dark' => ['plain', 'gradient', 'image'],
         'fit' => ['fill', 'fit', 'tile'],
         'density' => ['compact', 'normal', 'roomy'],
         'shadow' => ['none', 'soft', 'strong'],
@@ -75,8 +77,15 @@ final class Theme
             $id = is_numeric($in[$key] ?? null) ? (int) $in[$key] : null;
             $out[$key] = $id !== null && in_array($id, $images, true) ? $id : null;
         }
+        // A theme from before dark had its own background keeps the one background for both.
+        if (! in_array($in['bg_dark'] ?? null, self::CHOICES['bg_dark'], true)) {
+            $out['bg_dark'] = $out['bg'];
+        }
         if ($out['bg'] === 'image' && $out['image'] === null) {
             $out['bg'] = 'plain';
+        }
+        if ($out['bg_dark'] === 'image' && ($out['image_dark'] ?? $out['image']) === null) {
+            $out['bg_dark'] = 'plain';
         }
 
         return $out;

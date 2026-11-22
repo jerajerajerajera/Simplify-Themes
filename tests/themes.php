@@ -72,12 +72,21 @@ check(substr_count($css, '{') === substr_count($css, '}'), 'braces are balanced'
 $plain = Css::build($clean([]), $url, [], []);
 check(! str_contains($plain, '@font-face') && ! str_contains($plain, 'background:'), "Simplify's own look adds no fonts and no background");
 $pic = Css::build($clean(['bg' => 'image', 'image' => 3, 'blur' => 8, 'dim' => 30]), $url, [], [3 => '/simplify-themes/file/'.str_repeat('a', 32).'.webp']);
-check(str_contains($pic, 'html:root::before') && str_contains($pic, 'blur(8px)'), 'a picture background is drawn behind everything, blurred');
+check(str_contains($pic, 'html:root:not(.dark)::before') && str_contains($pic, 'html:root.dark::before') && str_contains($pic, 'blur(8px)'), 'a picture background is drawn behind everything, blurred');
 // TH-B6/B7: over a gradient or a picture the Admin page's box is a card, title band included; a plain one stays as the core draws it.
 check(str_contains($css, '.fi-main-ctn{background:var(--ps-surface) !important') && str_contains($pic, '.fi-main .fi-header{background:var(--ps-surface) !important'), 'over a gradient or picture the admin page is one card with its title band');
 check(! str_contains($plain, '--ps-console-card') && str_contains(Css::build($clean(['console' => 'follow']), $url, [], []), '--ps-console-card:#ffffff'), 'the console card and its command line get one colour');
 check(! str_contains($plain, 'fi-main-ctn'), 'over a plain background the admin page stays as Simplify draws it');
-check(str_contains($pic, 'rgb(244 244 245 / 0.30)') && str_contains($pic, 'html:root.dark::before{background:linear-gradient(rgb(0 0 0 / 0.30)'), 'Fade is a light veil in light mode and a dark one in dark mode');
+// Light and dark each have their own background; a theme from before keeps one for both.
+$img = '/simplify-themes/file/'.str_repeat('b', 32).'.webp';
+$split = Css::build($clean(['bg' => 'gradient', 'bg_dark' => 'image', 'image' => 3]), $url, [], [3 => $img]);
+check(str_contains($split, ':root:root:root:not(.dark){background:linear-gradient(') && ! str_contains($split, ':root:root:root.dark{background:')
+    && str_contains($split, 'html:root.dark::before') && ! str_contains($split, 'html:root:not(.dark)::before'), 'light and dark each wear their own background');
+check($clean(['bg' => 'gradient'])['bg_dark'] === 'gradient' && $clean(['bg' => 'gradient', 'bg_dark' => 'plain'])['bg_dark'] === 'plain', 'a theme without a dark background keeps its one background for both');
+check($clean(['bg' => 'plain', 'bg_dark' => 'image'])['bg_dark'] === 'plain', 'a dark picture background without a picture falls back to plain');
+$half = Css::build($clean(['bg' => 'plain', 'bg_dark' => 'gradient']), $url, [], []);
+check(str_contains($half, 'html.ps-shell.dark:not(.ps-frame) .fi-layout>.fi-main-ctn{') && ! str_contains($half, 'html.ps-shell:not(.dark)'), 'the admin card follows each mode\'s own background');
+check(str_contains($pic, 'rgb(244 244 245 / 0.30)') && str_contains($pic, 'pointer-events:none;background:linear-gradient(rgb(0 0 0 / 0.30)'), 'Fade is a light veil in light mode and a dark one in dark mode');
 $up = Css::build($clean(['font' => 'u7']), $url, [7 => ['name' => 'Harbour Sans', 'url' => '/simplify-themes/file/x.woff2', 'format' => 'woff2']], []);
 check(str_contains($up, 'font-family:"Themes Harbour Sans"') && str_contains($up, '"Themes Harbour Sans", ui-sans-serif'), 'an uploaded font gets its own family name');
 

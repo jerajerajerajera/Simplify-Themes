@@ -142,18 +142,28 @@ final class Files
         if ($row === null) {
             return true;
         }
-        $key = $row->kind === 'font' ? Fonts::uploadedKey($id) : $id;
-        foreach (Store::themes() as $theme) {
-            $d = $theme['data'];
-            if (in_array($key, [$d['font'], $d['head'], $d['mono'], $d['image'], $d['image_dark']], true)) {
-                return false;
-            }
+        if (self::inUse($id, $row->kind)) {
+            return false;
         }
         Storage::disk('local')->delete(self::DIRECTORY.'/'.$row->file);
         DB::table(self::TABLE)->where('id', $id)->delete();
         Store::flush();
 
         return true;
+    }
+
+    /** Whether a theme uses this file: a font in one of its slots, a picture as a background. */
+    public static function inUse(int $id, string $kind): bool
+    {
+        $key = $kind === 'font' ? Fonts::uploadedKey($id) : $id;
+        foreach (Store::themes() as $theme) {
+            $d = $theme['data'];
+            if (in_array($key, [$d['font'], $d['head'], $d['mono'], $d['image'], $d['image_dark']], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function put(string $kind, string $name, string $type, string $bytes): int
