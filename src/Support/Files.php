@@ -155,15 +155,28 @@ final class Files
     /** Whether a theme uses this file: a font in one of its slots, a picture as a background. */
     public static function inUse(int $id, string $kind): bool
     {
-        $key = $kind === 'font' ? Fonts::uploadedKey($id) : $id;
         foreach (Store::themes() as $theme) {
-            $d = $theme['data'];
-            if (in_array($key, [$d['font'], $d['head'], $d['mono'], $d['image'], $d['image_dark']], true)) {
+            if (self::usedBy($theme['data'], $id, $kind)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Whether one theme shows this file: a font in one of its slots, a picture as the background of light or dark. A
+     * picture that stays in a theme whose background is now plain or a gradient is not in use (TH-B12).
+     *
+     * @param  array<string, mixed>  $d  a clean theme
+     */
+    public static function usedBy(array $d, int $id, string $kind): bool
+    {
+        if ($kind === 'font') {
+            return in_array(Fonts::uploadedKey($id), [$d['font'], $d['head'], $d['mono']], true);
+        }
+
+        return ($d['bg'] === 'image' && $d['image'] === $id) || ($d['bg_dark'] === 'image' && ($d['image_dark'] ?? $d['image']) === $id);
     }
 
     private static function put(string $kind, string $name, string $type, string $bytes): int

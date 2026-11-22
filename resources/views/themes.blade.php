@@ -21,7 +21,7 @@
     <script src="{{ \Simplify\Themes\Support\Effects::scriptUrl() }}" data-navigate-once></script>
 
     <form wire:submit="save" data-simplify-unsaved="data" class="st s-fit {{ $core ? 'st-core' : 'st-pelican' }}"
-        x-data="simplifyThemes(@js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())">
+        x-data="simplifyThemes(@js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())" x-on:simplify-themes-uploaded.window="uploaded($event.detail)">
         <script type="application/json" class="st-lib">@json($lib)</script>
         <div class="st-bar">
             <div class="st-tabs" role="tablist">
@@ -227,7 +227,10 @@
                         </div>
                     </div>
                     <div class="st-sec">
-                        <div class="st-sec-head"><h3>{{ $t('pictures') }}</h3>{{ $this->uploadImageAction }}</div>
+                        <div class="st-sec-head"><h3>{{ $t('pictures') }}</h3>
+                            {{-- The new picture becomes the background of the mode being changed: light, or dark (TH-B15). --}}
+                            <button type="button" class="st-btn st-upload-image" x-on:click="$wire.mountAction('uploadImage', { dark: mode === 'dark' })"><x-filament::icon icon="tabler-upload" class="st-i" />{{ $t('image_upload') }}</button>
+                        </div>
                         <p class="st-hint">{{ $t('pictures_help') }}</p>
                         @forelse ($lib['images'] as $image)
                             <div class="st-file" wire:key="image-{{ $image['id'] }}">
@@ -387,6 +390,11 @@
 
     @script
     <script>
+        // Which tab and mode the editor shows, and what was last saved, kept outside the component: when Livewire draws
+        // the form again after an upload, the editor stays where it was and still knows what changed (TH-B13). A new
+        // visit to the page starts on Themes again.
+        if (window.simplifyThemesView?.id !== $wire.$id) window.simplifyThemesView = { id: $wire.$id, tab: 'themes', mode: null, base: '' };
+        const stView = window.simplifyThemesView;
         Alpine.data('simplifyThemes', (core) => ({
             // The fonts and pictures come from a JSON block that Livewire updates after an upload. They are not an
             // argument of x-data: a changed x-data starts the component again, which lost the tab and the changes (TH-B4).
@@ -398,14 +406,16 @@
             },
             core,
             data: $wire.$entangle('data'),
-            tab: 'themes',
-            mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+            tab: stView.tab,
+            mode: stView.mode || (document.documentElement.classList.contains('dark') ? 'dark' : 'light'),
             sheet: false,
             base: '',
             init() {
                 this.readLib();
                 new MutationObserver(() => this.readLib()).observe(this.$root, { childList: true, subtree: true, characterData: true });
-                this.remember();
+                if (stView.base) this.base = stView.base; else this.remember();
+                this.$watch('tab', (v) => { stView.tab = v; });
+                this.$watch('mode', (v) => { stView.mode = v; });
                 // In Simplify's Admin page the title band (breadcrumb, buttons, subtitle) stays on top while the card
                 // scrolls: the tabs and the preview stay right under it, however tall it is.
                 const head = document.querySelector('.fi-main .fi-header');
@@ -503,7 +513,7 @@
                 const stops = list ? list.map(([c, at]) => ({ c, p: at })) : [{ c: p.bg, p: 0 }, { c: this.mix(p.bg, p.accent, .22), p: 100 }];
                 g.stops = stops; g.mids = stops.map(() => 50); this.gsel = 0;
             },
-            remember() { this.base = JSON.stringify(this.data); },
+            remember() { this.base = stView.base = JSON.stringify(this.data); },
             changed() { return this.base !== '' && JSON.stringify(this.data) !== this.base; },
             hex(v) { return /^#[0-9a-f]{6}$/i.test(v || '') ? v.toLowerCase() : '#888888'; },
             rgb(h) { h = this.hex(h); return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); },
@@ -535,6 +545,17 @@
             bgKey() { return this.mode === 'dark' ? 'bg_dark' : 'bg'; },
             // The picture of the mode being changed: dark falls back to the light one.
             picture() { const t = this.data.theme; return this.mode === 'dark' && t.image_dark ? t.image_dark : t.image; },
+            // A new font or picture is picked here, not on the server: Simplify takes what the server sends back as
+            // the new starting point, and the change would not count as one (TH-B13). After that answer, once the form
+            // has been drawn again: Simplify first takes the form as it is, then sees the pick as a change.
+            uploaded(detail) {
+                setTimeout(() => {
+                    window.SimplifyUnsaved?.check();
+                    if (detail.font) this.data.theme.font = detail.font;
+                    if (detail.image) { this.mode = detail.dark ? 'dark' : 'light'; this.usePicture(detail.image); }
+                    this.$nextTick(() => window.SimplifyUnsaved?.check());
+                }, 300);
+            },
             usePicture(id) {
                 const t = this.data.theme;
                 if (this.mode === 'dark') t.image_dark = id; else t.image = id;

@@ -164,6 +164,10 @@
     .st-pv-table > div { display: flex; justify-content: space-between; padding: 7px 9px; border-top: 1px solid var(--pv-line); }
     .st-pv-table > div:first-child { border-top: 0; background: var(--pv-raised); color: var(--pv-muted); font-weight: 600; }
 
+    /* With Simplify the editor fills the page's card: it keeps the same inset from the card's edge as other pages (TH-B14). */
+    .st-core .st-edit { padding-left: 16px; }
+    .st-core .st-tabs { padding-left: 4px; }
+
     /* In Simplify's Admin page the page scrolls in its card under a title band of 52px: the tabs stay under the band and
        the preview beside them, in sight however far the editor scrolls. */
     @media (min-width: 601px) {
