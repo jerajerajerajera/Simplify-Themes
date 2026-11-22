@@ -164,6 +164,10 @@
     .st-pv-table > div { display: flex; justify-content: space-between; padding: 7px 9px; border-top: 1px solid var(--pv-line); }
     .st-pv-table > div:first-child { border-top: 0; background: var(--pv-raised); color: var(--pv-muted); font-weight: 600; }
 
+    /* The ⋯ menu shows every item in full; a long one wraps instead of ending in "…" (TH-B18). */
+    body:has(form.st) .fi-dropdown-panel { width: max-content !important; max-width: min(360px, calc(100vw - 24px)) !important; }
+    body:has(form.st) .fi-dropdown-list-item-label { overflow: visible; white-space: normal; text-overflow: clip; }
+
     /* With Simplify the editor fills the page's card: it keeps the same inset from the card's edge as other pages (TH-B14). */
     .st-core .st-edit { padding-left: 16px; }
     .st-core .st-tabs { padding-left: 4px; }
