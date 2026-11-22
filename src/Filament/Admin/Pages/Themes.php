@@ -233,7 +233,7 @@ final class Themes extends Page
                 }
                 try {
                     $id = Files::storeFont($file, trim((string) $data['name']));
-                    $this->data['theme']['font'] = Fonts::uploadedKey($id);
+                    $this->dispatch('simplify-themes-uploaded', font: Fonts::uploadedKey($id));
                 } catch (RuntimeException $e) {
                     Notification::make()->title(__(self::T.$e->getMessage()))->danger()->send();
                 }
@@ -252,10 +252,7 @@ final class Themes extends Page
                     return;
                 }
                 try {
-                    $id = Files::storeImage($file);
-                    $dark = (bool) ($arguments['dark'] ?? false);
-                    $this->data['theme'][$dark ? 'image_dark' : 'image'] = $id;
-                    $this->data['theme'][$dark ? 'bg_dark' : 'bg'] = 'image';
+                    $this->dispatch('simplify-themes-uploaded', image: Files::storeImage($file), dark: (bool) ($arguments['dark'] ?? false));
                 } catch (RuntimeException $e) {
                     Notification::make()->title(__(self::T.$e->getMessage()))->danger()->send();
                 }

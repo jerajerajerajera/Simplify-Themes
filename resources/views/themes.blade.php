@@ -21,7 +21,7 @@
     <script src="{{ \Simplify\Themes\Support\Effects::scriptUrl() }}" data-navigate-once></script>
 
     <form wire:submit="save" data-simplify-unsaved="data" class="st s-fit {{ $core ? 'st-core' : 'st-pelican' }}"
-        x-data="simplifyThemes(@js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())">
+        x-data="simplifyThemes(@js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())" x-on:simplify-themes-uploaded.window="uploaded($event.detail)">
         <script type="application/json" class="st-lib">@json($lib)</script>
         <div class="st-bar">
             <div class="st-tabs" role="tablist">
@@ -545,6 +545,15 @@
             bgKey() { return this.mode === 'dark' ? 'bg_dark' : 'bg'; },
             // The picture of the mode being changed: dark falls back to the light one.
             picture() { const t = this.data.theme; return this.mode === 'dark' && t.image_dark ? t.image_dark : t.image; },
+            // A new font or picture is picked here, not on the server: Simplify takes what the server sends back as
+            // the new starting point, and the change would not count as one (TH-B13). After that answer, not during it.
+            uploaded(detail) {
+                setTimeout(() => {
+                    if (detail.font) this.data.theme.font = detail.font;
+                    if (detail.image) { this.mode = detail.dark ? 'dark' : 'light'; this.usePicture(detail.image); }
+                    this.$nextTick(() => window.SimplifyUnsaved?.check());
+                }, 150);
+            },
             usePicture(id) {
                 const t = this.data.theme;
                 if (this.mode === 'dark') t.image_dark = id; else t.image = id;
