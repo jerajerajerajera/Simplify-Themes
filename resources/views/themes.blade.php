@@ -296,7 +296,7 @@
             lib,
             core,
             data: $wire.$entangle('data'),
-            tab: 'colours',
+            tab: 'themes',
             mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
             sheet: false,
             base: '',

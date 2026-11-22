@@ -52,6 +52,8 @@ async function run(browser, viewport, scheme, saves) {
     await goto('/admin/simplify-themes');
     say('the editor opens', await page.locator('form.st').count() === 1, { url: page.url() });
     if (core && !phone) say('the page never scrolls (P-7)', await scrolls() <= 1, { overflow: await scrolls() });
+    // TH-B3: the editor opens on the Themes tab, where a theme is picked.
+    say('the editor opens on the Themes tab', (await page.locator('.st-tab').first().getAttribute('aria-selected').catch(() => null)) === 'true');
     // TH-B1: every tile shows its mini preview across the whole tile, not as a strip on its left.
     await page.waitForSelector('.st-tile', { timeout: 10000 }).catch(() => {});
     const tile = await page.evaluate(() => { const el = document.querySelector('.st-tile'); const mini = el && el.querySelector('.st-mini'); return el && mini ? [el.getBoundingClientRect().width, mini.getBoundingClientRect().width] : [0, 0]; }).catch((e) => [0, 0, String(e.message).slice(0, 160)]);
