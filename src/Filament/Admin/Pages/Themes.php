@@ -40,7 +40,7 @@ final class Themes extends Page
 
     public ?int $themeId = null;
 
-    /** @var array{name: string, theme: array<string, mixed>, pick: bool} what the editor holds, compared for "Changes made" */
+    /** @var array<string, mixed> what the editor holds (name, theme, pick); the browser can send anything here, compared for "Changes made" */
     public array $data = ['name' => '', 'theme' => [], 'pick' => false];
 
     public static function canAccess(): bool

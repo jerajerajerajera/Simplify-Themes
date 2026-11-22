@@ -138,7 +138,7 @@ final class Files
     /** Removes a file no theme uses any more. Returns false when a theme still uses it. */
     public static function remove(int $id): bool
     {
-        $row = DB::table(self::TABLE)->find($id);
+        $row = DB::table(self::TABLE)->where('id', $id)->first();
         if ($row === null) {
             return true;
         }

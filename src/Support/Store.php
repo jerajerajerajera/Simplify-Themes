@@ -84,7 +84,7 @@ final class Store
     public static function settings(): array
     {
         if (self::$settings === null) {
-            $row = DB::table(self::SETTINGS)->find(1);
+            $row = DB::table(self::SETTINGS)->where('id', 1)->first();
             self::$settings = ['default' => $row?->default_theme_id !== null ? (int) $row->default_theme_id : null, 'pick' => (bool) ($row->let_people_pick ?? false)];
         }
 
