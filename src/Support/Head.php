@@ -46,6 +46,14 @@ final class Head
         return new HtmlString('<style id="simplify-themes">'.self::css($theme['data']).'</style>');
     }
 
+    /** The moving background at the end of the page, when the theme has one. */
+    public static function effect(): HtmlString
+    {
+        $theme = Store::active(user());
+
+        return new HtmlString($theme === null ? '' : Effects::tag($theme['data'], Effects::scriptUrl()));
+    }
+
     /** @param array<string, mixed> $data a clean theme */
     public static function css(array $data): string
     {

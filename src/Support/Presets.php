@@ -16,6 +16,7 @@ final class Presets
         'gray' => '#71717a', 'bg' => 'plain', 'image' => null, 'image_dark' => null, 'dim' => 10, 'blur' => 0, 'fit' => 'fill', 'glass' => 0,
         'font' => 'inter', 'head' => 'inter', 'mono' => 'inter',
         'radius' => 14, 'density' => 'normal', 'shadow' => 'soft', 'lines' => 'normal', 'console' => 'black',
+        'effect' => 'none', 'fx_amount' => 100, 'fx_speed' => 100, 'fx_size' => 100, 'fx_strength' => 75, 'fx_glow' => 0, 'fx_dir' => 180, 'fx_colour' => null,
     ];
 
     /** name => changes on top of SIMPLIFY. */

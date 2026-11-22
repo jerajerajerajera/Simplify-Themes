@@ -35,9 +35,11 @@ final class ThemesServiceProvider extends ServiceProvider
             ->where('file', Files::PATTERN)->name('simplify-themes.file');
         Route::get('/simplify-themes/font/{file}', [FileController::class, 'bundled'])
             ->where('file', Fonts::FILE_PATTERN)->name('simplify-themes.font');
+        Route::get('/simplify-themes/effects.js', [FileController::class, 'script'])->name('simplify-themes.effects');
 
         // Every page of every panel, login included: Filament's colours first, then the style block at the end of the head.
         Filament::serving(fn () => Head::colours());
         FilamentView::registerRenderHook(PanelsRenderHook::HEAD_END, fn () => Head::style());
+        FilamentView::registerRenderHook(PanelsRenderHook::BODY_END, fn () => Head::effect());
     }
 }

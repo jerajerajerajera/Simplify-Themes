@@ -61,7 +61,7 @@ final class Css
             $css .= ':is(h1, h2, h3, .fi-header-heading, .fi-section-header-heading, .fi-modal-heading){font-family:'.Fonts::stack($t['head'], $names).'}';
         }
 
-        return $css.self::background($t, $images);
+        return $css.self::background($t, $images).Effects::css($t);
     }
 
     /** @return array<string, string> */

@@ -23,6 +23,9 @@ shadows, see-through cards and the console.
   colours (accent, grey tint, running, warning, danger), from which Pelican makes its full palette. A warning never
   blocks Save.
 - **Background**: plain, a gradient, or one of your pictures (also a separate one for dark), with fade (a light veil in light mode, a dark one in dark mode), blur and fit.
+- **Effect**: a moving background behind every page: shooting stars, snow, fireflies, rain, aurora or bubbles, with
+  amount, speed, size, strength, glow, a direction dial and the theme's colours or your own. It pauses while the panel
+  is not on screen, stays still for people who ask their device for less motion, and draws less on a phone.
 - **Fonts**: a text font and a heading font from free fonts that ship with the plugin, or a font you upload.
 - **Shapes & console** (with Simplify): corners, spacing, shadows, lines, console colours and console font.
 - **Let people pick**: when you turn it on, everyone can choose one of the themes for themselves under **My theme** in
@@ -41,9 +44,10 @@ shadows, see-through cards and the console.
 
 Nothing leaves your panel. Every font ships with the plugin, nothing loads from another site.
 
-The plugin adds two routes, both read-only and limited to a fixed file-name pattern:
+The plugin adds three read-only routes; the two for files only answer a fixed file-name pattern:
 
 - `/simplify-themes/font/{file}`: the fonts that ship with the plugin.
+- `/simplify-themes/effects.js`: the script that draws a moving background, only on pages whose theme has one.
 - `/simplify-themes/file/{file}`: the fonts and pictures you uploaded (a random name of 32 characters).
 
 Both are open without signing in, because the login page uses the default theme too.

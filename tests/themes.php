@@ -4,12 +4,13 @@
 // tokens, and a font upload is recognised by its bytes. Run: php tests/themes.php
 declare(strict_types=1);
 
-foreach (['Colour', 'Fonts', 'Presets', 'Theme', 'Css', 'Files'] as $class) {
+foreach (['Colour', 'Fonts', 'Presets', 'Theme', 'Css', 'Effects', 'Files'] as $class) {
     require __DIR__."/../src/Support/$class.php";
 }
 
 use Simplify\Themes\Support\Colour;
 use Simplify\Themes\Support\Css;
+use Simplify\Themes\Support\Effects;
 use Simplify\Themes\Support\Files;
 use Simplify\Themes\Support\Fonts;
 use Simplify\Themes\Support\Presets;
@@ -98,6 +99,31 @@ foreach (Fonts::BUNDLED as $key => [, , , $files]) {
         check(is_file(__DIR__.'/../resources/fonts/'.$file), "font $key ships its file $file");
     }
 }
+
+// The moving background: only known effects, numbers in range, a colour or the theme's own; no code reaches the page
+$fx = $clean(['effect' => 'stars', 'fx_amount' => 9999, 'fx_speed' => -5, 'fx_dir' => 400, 'fx_glow' => '30', 'fx_colour' => 'red"><script>']);
+check($fx['effect'] === 'stars' && $fx['fx_amount'] === 250 && $fx['fx_speed'] === 10 && $fx['fx_dir'] === 359 && $fx['fx_glow'] === 30, 'effect settings are kept inside their range');
+check($fx['fx_colour'] === null && $clean(['fx_colour' => '#ABCDEF'])['fx_colour'] === '#abcdef', "an effect colour is #rrggbb or follows the theme");
+check($clean(['effect' => 'alert(1)'])['effect'] === 'none', 'an unknown effect is no effect');
+check(Effects::tag($clean([]), '/x.js') === '' && Effects::css($clean([])) === '', 'without an effect the page gets nothing');
+$tag = Effects::tag($fx, '/simplify-themes/effects.js?v=1');
+preg_match('/data-fx="([^"]*)"/', $tag, $m);
+$read = json_decode(html_entity_decode($m[1] ?? '', ENT_QUOTES), true);
+check(substr_count($tag, '<script') === 1 && str_contains($tag, 'src="/simplify-themes/effects.js?v=1"') && ! preg_match('/<script[^>]*>[^<]/', $tag), 'the page gets one script from the panel and no inline code');
+check(($read['type'] ?? null) === 'stars' && ($read['light']['col'] ?? null) === Presets::SIMPLIFY['light']['accent'] && ($read['dark']['col'] ?? null) === '#ffffff', 'the canvas reads clean settings with colours for light and dark');
+check(Effects::colours($clean(['effect' => 'snow', 'fx_colour' => '#ff0000']), 'dark')['col'] === '#ff0000', 'an own colour wins over the theme');
+$types = Theme::CHOICES['effect'];
+$own = array_keys(Effects::OWN);
+sort($types);
+sort($own);
+check(array_keys(Effects::START) === Theme::CHOICES['effect'] && $own === $types, 'every effect has a start direction and colours');
+$fxCss = Css::build($fx, fn ($f) => '/f/'.$f, [], []);
+check(str_contains($fxCss, '#simplify-themes-fx{position:fixed') && substr_count($fxCss, '{') === substr_count($fxCss, '}'), 'an effect adds the canvas layer to the style block');
+$js = (string) file_get_contents(__DIR__.'/../'.Effects::SCRIPT);
+foreach (Theme::CHOICES['effect'] as $type) {
+    check($type === 'none' || str_contains($js, "\n        $type: {"), "the script draws $type");
+}
+check(str_contains($js, 'prefers-reduced-motion') && str_contains($js, 'visibilitychange') && ! str_contains($js, 'ev'.'al(') && ! preg_match('#https?://#', $js), 'the script respects less motion, pauses when hidden and loads nothing else');
 
 if ($failures) {
     echo count($failures)." checks failed\n";

@@ -91,6 +91,24 @@
     /* Preview */
     .st-pv { position: relative; flex: 1; min-height: 0; overflow: hidden; border: 1px solid var(--st-line); border-radius: 12px; background: var(--pv-bg); color: var(--pv-ink); font-family: var(--pv-font); font-size: 13px; }
     .st-pv-bg { position: absolute; inset: -20px; background-position: center; pointer-events: none; }
+    .st-pv-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: block; }
+    .st-pv-pel { position: relative; }
+    .st-fxs { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+    .st-fxs .st-choice { padding: 8px; gap: 6px; }
+    .st-fx-thumb { display: block; width: 100%; height: 40px; border-radius: 6px; background: var(--st-raised, rgb(127 127 127 / .12)); }
+    .st-dirbox { display: flex; align-items: center; gap: 14px; }
+    .st-dirbox output { color: var(--st-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .st-dial { width: 84px; height: 84px; flex: none; border-radius: 50%; cursor: grab; touch-action: none; }
+    .st-dial:focus-visible { outline: 2px solid var(--st-primary); outline-offset: 3px; }
+    .st-dial svg { display: block; width: 100%; height: 100%; }
+    .st-dial-ring { fill: var(--st-raised, transparent); stroke: var(--st-line); stroke-width: 1.5; }
+    .st-dial-ticks { fill: none; stroke: var(--st-muted); stroke-width: 1.5; }
+    .st-dial-hand { transform-origin: 50px 50px; }
+    .st-dial-hand path:first-child { fill: none; stroke: var(--st-primary); stroke-width: 3.5; stroke-linecap: round; }
+    .st-dial-tip { fill: var(--st-primary); }
+    .st-fx-colour { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .st-fx-colour input[type=color] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--st-line); border-radius: 8px; background: var(--st-surface); cursor: pointer; }
+    .st-fx-colour input[type=color]:disabled { opacity: .4; cursor: default; }
     .st-pv-in { position: relative; display: flex; flex-direction: column; gap: calc(10px * var(--pv-d)); padding: calc(12px * var(--pv-d)); }
     .st-pv-top { display: flex; align-items: center; gap: 8px; }
     .st-pv-name { margin-right: auto; font-family: var(--pv-head); font-size: 17px; font-weight: 700; }

@@ -21,10 +21,15 @@ final class Theme
         'shadow' => ['none', 'soft', 'strong'],
         'lines' => ['subtle', 'normal', 'strong'],
         'console' => ['black', 'follow'],
+        'effect' => ['none', 'stars', 'snow', 'fireflies', 'rain', 'aurora', 'bubbles'],
     ];
 
     /** min, max */
-    public const RANGES = ['dim' => [0, 80], 'blur' => [0, 20], 'glass' => [0, 50], 'radius' => [0, 22]];
+    public const RANGES = [
+        'dim' => [0, 80], 'blur' => [0, 20], 'glass' => [0, 50], 'radius' => [0, 22],
+        // The moving background (Effects): percentages, and the direction in degrees (0 up, 90 right, 180 down).
+        'fx_amount' => [20, 250], 'fx_speed' => [10, 250], 'fx_size' => [50, 250], 'fx_strength' => [10, 100], 'fx_glow' => [0, 100], 'fx_dir' => [0, 359],
+    ];
 
     public const FONT_SLOTS = ['font', 'head', 'mono'];
 
@@ -56,6 +61,9 @@ final class Theme
         foreach (self::RANGES as $key => [$min, $max]) {
             $out[$key] = is_numeric($in[$key] ?? null) ? max($min, min($max, (int) $in[$key])) : $base[$key];
         }
+        // The effect's own colour, or null: then it follows the theme (Effects::colours).
+        $fx = is_string($in['fx_colour'] ?? null) ? strtolower(trim($in['fx_colour'])) : null;
+        $out['fx_colour'] = Colour::valid($fx) ? $fx : null;
         foreach (self::FONT_SLOTS as $slot) {
             $out[$slot] = in_array($in[$slot] ?? null, $fonts, true) ? $in[$slot] : $base[$slot];
         }

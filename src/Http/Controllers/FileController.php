@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Simplify\Themes\Http\Controllers;
 
 use Illuminate\Support\Facades\Storage;
+use Simplify\Themes\Support\Effects;
 use Simplify\Themes\Support\Files;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -31,6 +32,12 @@ final class FileController
         abort_unless(is_file($path), 404);
 
         return self::send($path, 'font/woff2');
+    }
+
+    /** The script that draws a moving background (Effects). Its address carries its content, so it may be kept long. */
+    public function script(): BinaryFileResponse
+    {
+        return self::send(dirname(__DIR__, 3).'/'.Effects::SCRIPT, 'text/javascript; charset=utf-8');
     }
 
     private static function send(string $path, string $type): BinaryFileResponse

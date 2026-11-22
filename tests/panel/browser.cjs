@@ -39,6 +39,17 @@ async function login() {
   if (page.url().includes('/login')) throw new Error('login failed');
 }
 
+/** Whether a canvas has drawn something: any pixel that is not empty. */
+async function drawn(selector) {
+  return page.evaluate((sel) => {
+    const c = document.querySelector(sel);
+    if (!c || !c.width) return false;
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    for (let i = 3; i < d.length; i += 16) if (d[i] > 0) return true;
+    return false;
+  }, selector).catch(() => false);
+}
+
 async function run(browser, viewport, scheme, saves) {
   stand = `${viewport.name}-${scheme}${core ? '' : '-pelican'}`;
   const phone = viewport.name === 'phone390';
@@ -91,10 +102,23 @@ async function run(browser, viewport, scheme, saves) {
       await page.locator(':text("Saved"):visible').first().waitFor({ timeout: 10000 }).catch(() => {});
       await goto('/admin/simplify-themes');
       say('Save keeps the change', (await page.inputValue('#st-name').catch(() => '')) === name);
+      // The moving background: picking an effect moves the live preview, counts as a change and reaches the panel after Save.
+      await page.locator('.st-tab').nth(TABS.indexOf('background')).click();
+      await page.locator('.st-fxs .st-choice').nth(1).click();
+      await sleep(800);
+      say('an effect moves in the live preview', await drawn('.st-pv-fx'));
+      say('an effect counts as a change', await page.locator(':text("Changes made"):visible').first().waitFor({ timeout: 5000 }).then(() => true).catch(() => false));
+      await shot('editor-effect');
+      await save.click();
+      await page.locator(':text("Saved"):visible').first().waitFor({ timeout: 10000 }).catch(() => {});
     }
     // The ready-made default (checks.yml) on the pages everyone sees.
     await goto('/');
     say('the overview opens with the default theme', await page.locator('style#simplify-themes').count() === 1);
+    await sleep(800);
+    say('the effect moves behind the overview', await drawn('#simplify-themes-fx'));
+    // Behind everything: the middle of the page is never the effect's canvas, so every click still lands.
+    say('the effect never covers what people click', await page.evaluate(() => document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.id !== 'simplify-themes-fx'));
     await shot('overview');
     await goto('/my-theme');
     say('My theme opens', await page.locator('input[type="radio"]').count() >= 2);

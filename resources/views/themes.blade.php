@@ -6,6 +6,7 @@
         $t = fn (string $key, array $replace = []) => __('simplify-themes::themes.'.$key, $replace);
         $roles = \Simplify\Themes\Support\Theme::ROLES;
         $pelican = ['accent' => 'light', 'gray' => null, 'ok' => 'light', 'warn' => 'light', 'danger' => 'light'];
+        $effects = \Simplify\Themes\Support\Theme::CHOICES['effect'];
         $tabs = ['themes' => 'tabler-stack-2', 'colours' => 'tabler-palette', 'background' => 'tabler-photo', 'fonts' => 'tabler-typography'] + ($core ? ['shapes' => 'tabler-square-rounded'] : []);
     @endphp
 
@@ -17,6 +18,7 @@
         @endforeach
     </style>
     @include('simplify-themes::partials.styles')
+    <script src="{{ \Simplify\Themes\Support\Effects::scriptUrl() }}" data-navigate-once></script>
 
     <form wire:submit="save" data-simplify-unsaved="data" class="st s-fit {{ $core ? 'st-core' : 'st-pelican' }}"
         x-data="simplifyThemes(@js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())">
@@ -129,6 +131,37 @@
                                     <b>{{ $t('bg_'.$kind) }}</b><small>{{ $t('bg_'.$kind.'_help') }}</small>
                                 </button>
                             @endforeach
+                        </div>
+                    </div>
+                    <div class="st-sec">
+                        <h3>{{ $t('effect') }}</h3>
+                        <p class="st-hint">{{ $t('effect_help') }}</p>
+                        <div class="st-choices st-fxs">
+                            @foreach ($effects as $effect)
+                                <button type="button" class="st-choice" x-on:click="pickEffect('{{ $effect }}')" :aria-pressed="data.theme.effect === '{{ $effect }}'">
+                                    <canvas class="st-fx-thumb" data-fx="{{ $effect }}" :style="{ background: palette().bg }" aria-hidden="true"></canvas><b>{{ $t('fx_'.$effect) }}</b>
+                                </button>
+                            @endforeach
+                        </div>
+                        <div x-show="data.theme.effect !== 'none'">
+                            @foreach (['amount' => [20, 250], 'speed' => [10, 250], 'size' => [50, 250], 'strength' => [10, 100], 'glow' => [0, 100]] as $key => [$min, $max])
+                                <div class="st-field"><span>{{ $t('fx_'.$key) }}</span><div class="st-range"><input type="range" min="{{ $min }}" max="{{ $max }}" step="5" x-model.number="data.theme.fx_{{ $key }}" aria-label="{{ $t('fx_'.$key) }}"><output x-text="data.theme.fx_{{ $key }} + '%'"></output></div></div>
+                            @endforeach
+                            <div class="st-field"><span>{{ $t('fx_direction') }}<small>{{ $t('fx_direction_help') }}</small></span>
+                                <div class="st-dirbox">
+                                    <div class="st-dial" role="slider" tabindex="0" aria-label="{{ $t('fx_direction') }}" aria-valuemin="0" aria-valuemax="359" :aria-valuenow="data.theme.fx_dir"
+                                        x-on:pointerdown="dial($event, true)" x-on:pointermove="dial($event, false)" x-on:keydown="dialKey($event)">
+                                        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" class="st-dial-ring"/><path d="M50 8v7M92 50h-7M50 92v-7M8 50h7" class="st-dial-ticks"/><g class="st-dial-hand" :style="{ transform: 'rotate(' + data.theme.fx_dir + 'deg)' }"><path d="M50 50V14"/><path d="M43 22l7-10 7 10" class="st-dial-tip"/></g><circle cx="50" cy="50" r="4" class="st-dial-tip"/></svg>
+                                    </div>
+                                    <output x-text="data.theme.fx_dir + '°'"></output>
+                                </div>
+                            </div>
+                            <div class="st-field"><span>{{ $t('fx_colour') }}</span>
+                                <div class="st-fx-colour">
+                                    <label class="st-switch"><input type="checkbox" :checked="data.theme.fx_colour === null" x-on:change="data.theme.fx_colour = $event.target.checked ? null : palette().accent"><i></i><span>{{ $t('fx_follow') }}</span></label>
+                                    <input type="color" :value="data.theme.fx_colour || palette().accent" x-on:input="data.theme.fx_colour = $event.target.value" :disabled="data.theme.fx_colour === null" aria-label="{{ $t('fx_colour') }}">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="st-sec">
@@ -251,6 +284,7 @@
                 </div>
                 <div class="st-pv" :style="vars()">
                     <div class="st-pv-bg" x-show="data.theme.bg === 'image' && pictureUrl()" :style="{ backgroundImage: 'linear-gradient(' + veil() + ', ' + veil() + '), url(' + pictureUrl() + ')', filter: 'blur(' + data.theme.blur + 'px)', backgroundSize: data.theme.fit === 'fit' ? 'contain' : (data.theme.fit === 'tile' ? 'auto' : 'cover'), backgroundRepeat: data.theme.fit === 'tile' ? 'repeat' : 'no-repeat' }"></div>
+                    <canvas class="st-pv-fx" aria-hidden="true"></canvas>
                     @if ($core)
                         <div class="st-pv-in">
                             <div class="st-pv-top"><span class="st-pv-name">{{ filament()->getBrandName() }}</span><span class="st-pv-icon"><x-filament::icon icon="tabler-bell" class="st-i" /></span><span class="st-pv-btn">{{ $t('pv_create') }}</span></div>
@@ -312,6 +346,36 @@
                 this.readLib();
                 new MutationObserver(() => this.readLib()).observe(this.$root, { childList: true, subtree: true, characterData: true });
                 this.remember();
+                // The moving background: the effect tiles and the live preview share the panel's own drawing script.
+                const start = () => {
+                    this.$root.querySelectorAll('.st-fx-thumb').forEach((cv) => window.SimplifyThemesFx.run(cv, () => this.effect(cv.dataset.fx, true)));
+                    window.SimplifyThemesFx.run(this.$root.querySelector('.st-pv-fx'), () => this.effect(this.data.theme.effect, false));
+                };
+                window.SimplifyThemesFx ? start() : window.addEventListener('simplify-themes-fx', start, { once: true });
+            },
+            fxStart: @js(\Simplify\Themes\Support\Effects::START),
+            fxOwn: @js(\Simplify\Themes\Support\Effects::OWN),
+            fxBands: @js(\Simplify\Themes\Support\Effects::BANDS),
+            pickEffect(type) { this.data.theme.effect = type; this.data.theme.fx_dir = this.fxStart[type]; },
+            // What one canvas draws: a tile shows the effect plainly, the preview with this theme's settings.
+            effect(type, thumb) {
+                const t = this.data.theme, p = this.palette(), dark = this.mode === 'dark' ? 1 : 0;
+                const own = this.fxOwn[type] ? this.fxOwn[type][dark] : 'accent', col = t.fx_colour || (own === 'accent' ? p.accent : own);
+                const bands = t.fx_colour ? [col + '55', col + '33', col + '22'] : this.fxBands[dark];
+                return thumb
+                    ? { type, thumb, amount: 160, speed: 100, size: 100, strength: 100, glow: 0, dir: this.fxStart[type], col, bands }
+                    : { type, amount: t.fx_amount, speed: t.fx_speed, size: t.fx_size, strength: t.fx_strength, glow: t.fx_glow, dir: t.fx_dir, col, bands };
+            },
+            // The direction dial: drag round it, or the arrow keys in steps of 15 degrees.
+            dial(e, down) {
+                const el = e.currentTarget;
+                if (down) el.setPointerCapture(e.pointerId); else if (!el.hasPointerCapture(e.pointerId)) return;
+                const r = el.getBoundingClientRect(), deg = Math.atan2(e.clientX - r.left - r.width / 2, -(e.clientY - r.top - r.height / 2)) * 180 / Math.PI;
+                this.data.theme.fx_dir = (Math.round(deg / 5) * 5 + 360) % 360;
+            },
+            dialKey(e) {
+                const step = { ArrowRight: 15, ArrowUp: 15, ArrowLeft: -15, ArrowDown: -15 }[e.key];
+                if (step) { e.preventDefault(); this.data.theme.fx_dir = (this.data.theme.fx_dir + step + 360) % 360; }
             },
             remember() { this.base = JSON.stringify(this.data); },
             changed() { return this.base !== '' && JSON.stringify(this.data) !== this.base; },
