@@ -53,8 +53,9 @@ async function run(browser, viewport, scheme, saves) {
     say('the editor opens', await page.locator('form.st').count() === 1, { url: page.url() });
     if (core && !phone) say('the page never scrolls (P-7)', await scrolls() <= 1, { overflow: await scrolls() });
     // TH-B1: every tile shows its mini preview across the whole tile, not as a strip on its left.
-    const tile = await page.locator('.st-tile').first().evaluate((el) => [el.getBoundingClientRect().width, el.querySelector('.st-mini').getBoundingClientRect().width]).catch(() => [0, 0]);
-    say('a theme tile shows its preview across the tile', tile[0] > 0 && tile[1] >= tile[0] - 4, { tile: tile[0], preview: tile[1] });
+    await page.waitForSelector('.st-tile', { timeout: 10000 }).catch(() => {});
+    const tile = await page.evaluate(() => { const el = document.querySelector('.st-tile'); const mini = el && el.querySelector('.st-mini'); return el && mini ? [el.getBoundingClientRect().width, mini.getBoundingClientRect().width] : [0, 0]; }).catch((e) => [0, 0, String(e.message).slice(0, 160)]);
+    say('a theme tile shows its preview across the tile', tile[0] > 0 && tile[1] >= tile[0] - 4, { tile: tile[0], preview: tile[1], error: tile[2] });
     // TH-B2: on a phone the preview is a sheet that stays out of sight until Live preview opens it.
     if (phone) say('the preview sheet is hidden until opened', !(await page.locator('.st-side').isVisible()));
     for (const tab of TABS) {
