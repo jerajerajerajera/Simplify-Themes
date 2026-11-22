@@ -43,12 +43,15 @@
                         <p class="st-hint">{{ $t('themes_help') }}</p>
                         <div class="st-tiles">
                             @foreach ($themes as $theme)
-                                @php($p = $theme['data']['light'])
                                 <button type="button" class="st-tile" wire:key="tile-{{ $theme['id'] }}" wire:click="pick({{ $theme['id'] }})" aria-pressed="{{ $theme['id'] === $themeId ? 'true' : 'false' }}">
-                                    <span class="st-mini" style="background: {{ $p['bg'] }}">
-                                        <i style="background: {{ $p['surface'] }}; border-color: {{ $p['line'] }}"></i>
-                                        <i style="background: {{ $p['surface'] }}; border-color: {{ $p['line'] }}"><b style="background: {{ $p['accent'] }}"></b></i>
-                                    </span>
+                                    {{-- The panel's own mode: light tiles in light mode, dark tiles in dark mode. --}}
+                                    @foreach (['light', 'dark'] as $tileMode)
+                                        @php($p = $theme['data'][$tileMode])
+                                        <span class="st-mini is-{{ $tileMode }}" style="background: {{ $p['bg'] }}">
+                                            <i style="background: {{ $p['surface'] }}; border-color: {{ $p['line'] }}"></i>
+                                            <i style="background: {{ $p['surface'] }}; border-color: {{ $p['line'] }}"><b style="background: {{ $p['accent'] }}"></b></i>
+                                        </span>
+                                    @endforeach
                                     <span class="st-tile-info"><b>{{ $theme['name'] }}</b><small>{{ $theme['default'] ? $t('default_for_everyone') : '' }}</small></span>
                                 </button>
                             @endforeach
@@ -433,6 +436,7 @@
             // The gradient of the mode the live preview shows; Gradient.php draws the same on the panel.
             gsel: 0,
             gdrag: null,
+            squeezed: null,
             gPresets: @js(\Simplify\Themes\Support\Gradient::PRESETS),
             g() { return this.data.theme.grad[this.mode]; },
             gradCss(g, bar) {
@@ -474,10 +478,17 @@
             },
             removeStop(i) { const g = this.g(); if (g.stops.length > 2) { g.stops.splice(i, 1); g.mids.splice(i, 1); this.gsel = 0; } },
             setRepeat(on) {
-                const g = this.g(), ps = g.stops.map((s) => s.p);
+                const g = this.g(), ps = g.stops.map((s) => s.p), key = this.mode + JSON.stringify(g.stops.map((s) => s.c));
                 g.repeat = on;
-                // Room for the seam: when the colours fill the whole bar, they move closer together first.
-                if (on && 100 + Math.min(...ps) - Math.max(...ps) < 15) g.stops.forEach((s) => { s.p = Math.round(s.p * .75); });
+                // Room for the seam: when the colours fill the whole bar, they move closer together first. Turned off
+                // again before anything else changed, they go back where they were.
+                if (on && 100 + Math.min(...ps) - Math.max(...ps) < 15) {
+                    g.stops.forEach((s) => { s.p = Math.round(s.p * .75); });
+                    this.squeezed = { key, before: ps, after: g.stops.map((s) => s.p) };
+                } else if (!on && this.squeezed?.key === key && JSON.stringify(ps) === JSON.stringify(this.squeezed.after)) {
+                    g.stops.forEach((s, i) => { s.p = this.squeezed.before[i]; });
+                }
+                if (!on) this.squeezed = null;
             },
             usePreset(list) {
                 const g = this.g(), p = this.palette();

@@ -9,3 +9,6 @@
   strength, glow, direction and colour.
 - A gradient editor: 2 to 6 colours with blend points, linear, radial or conic, angle, centre and a seamless repeat,
   one gradient for light and one for dark.
+- Over a gradient or picture, Simplify's admin pages sit on one card with a matching title bar; the editor's tabs and
+  preview stay in sight while it scrolls.
+- The ⋯ menu shows its words, Repeat off puts the colours back, and theme tiles follow light or dark.

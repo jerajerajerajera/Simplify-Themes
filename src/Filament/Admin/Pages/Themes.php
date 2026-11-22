@@ -168,7 +168,9 @@ final class Themes extends Page
     protected function getHeaderActions(): array
     {
         return [
-            ActionGroup::make([
+            // Pelican makes every action an icon button when people keep its default button style; in the ⋯ menu each
+            // item keeps its words (TH-B8).
+            ActionGroup::make(array_map(fn (Action $action) => $action->grouped(), [
                 Action::make('newTheme')->label(__(self::T.'new'))->icon('tabler-plus')
                     ->action(fn () => $this->saveFirst() || $this->open(Store::save(null, __(self::T.'new_name'), Presets::simplify()))),
                 Action::make('duplicate')->label(__(self::T.'duplicate'))->icon('tabler-copy')
@@ -202,7 +204,7 @@ final class Themes extends Page
                         Store::delete((int) $this->themeId);
                         $this->open(Store::settings()['default'] ?? (Store::themes()[0]['id'] ?? 0));
                     }),
-            ])->label(__(self::T.'more'))->icon('tabler-dots')->iconButton()->color('gray'),
+            ]))->label(__(self::T.'more'))->icon('tabler-dots')->iconButton()->color('gray'),
             // Save last, as on every Simplify page (ADDONS.md, "Page head").
             Action::make('save')->label(__(self::T.'save'))->icon('tabler-device-floppy')->action('save')->keyBindings(['mod+s']),
         ];

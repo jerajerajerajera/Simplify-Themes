@@ -53,6 +53,7 @@
     .st-tile { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: 0; overflow: hidden; border: 1px solid var(--st-line); border-radius: var(--st-r); background: var(--st-surface); color: inherit; text-align: left; cursor: pointer; }
     .st-tile[aria-pressed="true"] { border-color: var(--st-primary); box-shadow: 0 0 0 1px var(--st-primary); }
     .st-mini { box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; height: 74px; padding: 10px; align-content: end; }
+    .dark .st-mini.is-light, html:not(.dark) .st-mini.is-dark { display: none; }
     .st-mini i { position: relative; height: 28px; border: 1px solid; border-radius: 6px; }
     .st-mini b { position: absolute; right: 6px; bottom: 6px; width: 20px; height: 7px; border-radius: 4px; }
     .st-tile-info { box-sizing: border-box; width: 100%; padding: 8px 12px; border-top: 1px solid var(--st-line); }
@@ -156,6 +157,15 @@
     .st-pv-table { overflow: hidden; border: 1px solid var(--pv-line); border-radius: 10px; background: var(--pv-surface); font-size: 11px; }
     .st-pv-table > div { display: flex; justify-content: space-between; padding: 7px 9px; border-top: 1px solid var(--pv-line); }
     .st-pv-table > div:first-child { border-top: 0; background: var(--pv-raised); color: var(--pv-muted); font-weight: 600; }
+
+    /* In Simplify's Admin page the page scrolls in its card under a title band of 52px: the tabs stay under the band and
+       the preview beside them, in sight however far the editor scrolls. */
+    @media (min-width: 601px) {
+        html.ps-shell-menu:not(.ps-frame) .st-core .st-bar { position: sticky; top: 52px; z-index: 9; background: var(--st-band, var(--s-bg, var(--st-surface))); }
+    }
+    @media (min-width: 901px) {
+        html.ps-shell-menu:not(.ps-frame) .st-core .st-side { top: 98px; height: min(560px, calc(100dvh - 210px)); }
+    }
 
     /* Without Simplify the page looks like Pelican's own: sections are cards on the grey page. */
     .st-pelican .st-bar { margin-bottom: 16px; }
