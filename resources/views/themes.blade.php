@@ -19,7 +19,8 @@
     @include('simplify-themes::partials.styles')
 
     <form wire:submit="save" data-simplify-unsaved="data" class="st s-fit {{ $core ? 'st-core' : 'st-pelican' }}"
-        x-data="simplifyThemes(@js($lib), @js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())">
+        x-data="simplifyThemes(@js($core))" x-on:simplify-themes-opened.window="$nextTick(() => remember())">
+        <script type="application/json" class="st-lib">@json($lib)</script>
         <div class="st-bar">
             <div class="st-tabs" role="tablist">
                 @foreach ($tabs as $key => $icon)
@@ -292,15 +293,26 @@
 
     @script
     <script>
-        Alpine.data('simplifyThemes', (lib, core) => ({
-            lib,
+        Alpine.data('simplifyThemes', (core) => ({
+            // The fonts and pictures come from a JSON block that Livewire updates after an upload. They are not an
+            // argument of x-data: a changed x-data starts the component again, which lost the tab and the changes (TH-B4).
+            libText: '',
+            lib: { fonts: [], uploaded: [], images: [] },
+            readLib() {
+                const text = this.$root.querySelector('.st-lib')?.textContent || '';
+                if (text !== this.libText) { this.libText = text; try { this.lib = JSON.parse(text); } catch (e) {} }
+            },
             core,
             data: $wire.$entangle('data'),
             tab: 'themes',
             mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
             sheet: false,
             base: '',
-            init() { this.remember(); },
+            init() {
+                this.readLib();
+                new MutationObserver(() => this.readLib()).observe(this.$root, { childList: true, subtree: true, characterData: true });
+                this.remember();
+            },
             remember() { this.base = JSON.stringify(this.data); },
             changed() { return this.base !== '' && JSON.stringify(this.data) !== this.base; },
             hex(v) { return /^#[0-9a-f]{6}$/i.test(v || '') ? v.toLowerCase() : '#888888'; },
@@ -309,7 +321,7 @@
             lum(h) { return this.rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [.2126, .7152, .0722][i], 0); },
             ratio(a, b) { const [x, y] = [this.lum(a), this.lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); },
             on(c) { return this.ratio(c, '#ffffff') >= this.ratio(c, '#111118') ? '#ffffff' : '#111118'; },
-            font(key, generic) { const f = [...lib.fonts, ...lib.uploaded].find(x => x.key === key); return f ? f.stack : 'inherit'; },
+            font(key, generic) { const f = [...this.lib.fonts, ...this.lib.uploaded].find(x => x.key === key); return f ? f.stack : 'inherit'; },
             palette() {
                 const t = this.data.theme;
                 if (core) return t[this.mode];
@@ -330,7 +342,7 @@
             pictureUrl() {
                 const t = this.data.theme;
                 const id = this.mode === 'dark' && t.image_dark ? t.image_dark : t.image;
-                const image = lib.images.find(i => i.id === id);
+                const image = this.lib.images.find(i => i.id === id);
                 return image ? image.url : '';
             },
             vars() {

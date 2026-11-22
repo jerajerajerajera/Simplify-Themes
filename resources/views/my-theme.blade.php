@@ -1,8 +1,11 @@
 <x-filament-panels::page>
     @php($themes = collect(\Simplify\Themes\Support\Store::themes())->keyBy('id'))
+    @php($simplify = \Simplify\Themes\Support\Presets::SIMPLIFY['light'])
+    @php($default = $themes[\Simplify\Themes\Support\Store::settings()['default'] ?? 0]['data']['light'] ?? $simplify)
     <form wire:submit="save" data-simplify-unsaved="choice" class="st-mine s-fit">
         @foreach ($this->options() as $value => $label)
-            @php($p = $themes[(int) $value]['data']['light'] ?? null)
+            {{-- TH-B5: every choice shows its own colours; the panel default shows the default theme's. --}}
+            @php($p = match ((string) $value) { 'default' => $default, 'simplify' => $simplify, default => $themes[(int) $value]['data']['light'] ?? $simplify })
             <label class="st-mine-row">
                 <input type="radio" wire:model="choice" value="{{ $value }}">
                 <span class="st-mine-swatch" @if ($p) style="background: {{ $p['bg'] }}; border-color: {{ $p['line'] }}" @endif>

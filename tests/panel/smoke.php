@@ -1,10 +1,12 @@
 <?php
 
 // Loads Simplify Themes inside a real Pelican panel and goes through what it does.
-// Run from the panel folder after `php artisan p:plugin:install simplify-themes`:
+// Run from the panel folder after `php artisan p:plugin:install simplify-themes`. The Livewire steps need the
+// panel's development packages (PHPUnit), as in CI; on a production panel those steps fail on a missing PHPUnit.
 // php plugins/simplify-themes/tests/panel/smoke.php
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Users\UserCreationService;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
@@ -15,6 +17,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
 use Simplify\Themes\Filament\Admin\Pages\Themes;
@@ -78,11 +81,15 @@ function admin(): void
 
 boot();
 // Pelican has no root_admin column: root admin is a role.
-$admin = User::where('email', 'smoke-themes@example.com')->first()
-    ?? User::factory()->create(['email' => 'smoke-themes@example.com']);
+// Made the way Pelican makes people, not with a factory: a real panel has no Faker.
+function person(string $name): User
+{
+    return User::where('email', "$name@example.com")->first()
+        ?? app(UserCreationService::class)->handle(['email' => "$name@example.com", 'username' => $name, 'password' => Str::random(32)]);
+}
+$admin = person('smoke-themes');
 $admin->syncRoles(Role::getRootAdmin());
-$member = User::where('email', 'smoke-themes-member@example.com')->first()
-    ?? User::factory()->create(['email' => 'smoke-themes-member@example.com']);
+$member = person('smoke-themes-member');
 $simplify = class_exists('Simplify\Core\SimplifyPlugin');
 
 step('the Themes page renders for a root admin and adds the ready-made themes once', function () use ($admin) {
@@ -92,6 +99,8 @@ step('the Themes page renders for a root admin and adds the ready-made themes on
     $html = $response->getContent();
     // P-7: with Simplify the page never scrolls as a whole; P-38: nothing saves by itself.
     must(str_contains($html, 's-fit') && str_contains($html, 'data-simplify-unsaved="data"'), 'the editor is not s-fit or has no unsaved guard');
+    // TH-B4: the fonts and pictures are no argument of x-data, so an upload does not start the editor again.
+    must((bool) preg_match('/x-data="simplifyThemes\((true|false)\)"/', $html), 'the editor\'s x-data holds more than the core flag');
     must(DB::table(Store::THEMES)->count() === 4, 'the ready-made themes were not added: '.DB::table(Store::THEMES)->count());
     visit($admin, $url);
     must(DB::table(Store::THEMES)->count() === 4, 'the ready-made themes were added twice');
@@ -224,7 +233,12 @@ step('people can pick a theme only while the admin lets them', function () use (
     Store::saveSettings(Store::settings()['default'], false);
     must(visit($member, MyTheme::getUrl(panel: 'app'))->getStatusCode() !== 200, 'My theme opens while people may not pick');
     Store::saveSettings(Store::settings()['default'], true);
-    must(visit($member, MyTheme::getUrl(panel: 'app'))->getStatusCode() === 200, 'My theme does not open while people may pick');
+    $mine = visit($member, MyTheme::getUrl(panel: 'app'));
+    must($mine->getStatusCode() === 200, 'My theme does not open while people may pick');
+    // TH-B5: "Panel default" shows the default theme's own colours, not the same swatch as Simplify.
+    $default = Store::find(Store::settings()['default']);
+    preg_match('/<label class="st-mine-row">\s*<input[^>]*value="default".*?<\/label>/s', $mine->getContent(), $row);
+    must($default === null || str_contains($row[0] ?? '', $default['data']['light']['accent']), 'Panel default does not show the default theme\'s colours');
     Filament::setCurrentPanel(Filament::getPanel('app'));
     $pick = collect(Store::themes())->firstWhere('id', '!=', Store::settings()['default']);
     Livewire::actingAs($member)->test(MyTheme::class)->set('choice', (string) $pick['id'])->call('save');
