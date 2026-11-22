@@ -542,7 +542,7 @@
                     '--pv-accent': p.accent, '--pv-on': this.on(p.accent), '--pv-ok': p.ok, '--pv-warn': p.warn, '--pv-danger': p.danger,
                     '--pv-r': (core ? t.radius : 12) + 'px', '--pv-d': core ? { compact: .85, normal: 1, roomy: 1.1 }[t.density] : 1, '--pv-shadow': shadow,
                     '--pv-font': t.font === 'inter' ? 'inherit' : this.font(t.font), '--pv-head': t.head === 'inter' ? 'inherit' : this.font(t.head), '--pv-mono': this.font(t.mono),
-                    '--pv-con-bg': follow ? p.surface : '#09090b', '--pv-con-ink': follow ? p.ink : '#e4e4e7', '--pv-con-line': follow ? line : '#2c2c33',
+                    '--pv-con-bg': follow ? p.surface : '#131a20', '--pv-con-ink': follow ? p.ink : '#e4e4e7', '--pv-con-line': follow ? line : '#2c2c33',
                 };
             },
             darkFromLight() {

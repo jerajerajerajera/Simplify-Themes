@@ -84,7 +84,7 @@ async function run(browser, viewport, scheme, saves) {
     say('the editor opens on the Themes tab', (await page.locator('.st-tab').first().getAttribute('aria-selected').catch(() => null)) === 'true');
     // TH-B1: every tile shows its mini preview across the whole tile, not as a strip on its left.
     await page.waitForSelector('.st-tile', { timeout: 10000 }).catch(() => {});
-    const tile = await page.evaluate(() => { const el = document.querySelector('.st-tile'); const mini = el && el.querySelector('.st-mini'); return el && mini ? [el.getBoundingClientRect().width, mini.getBoundingClientRect().width] : [0, 0]; }).catch((e) => [0, 0, String(e.message).slice(0, 160)]);
+    const tile = await page.evaluate(() => { const el = document.querySelector('.st-tile'); const mini = el && [...el.querySelectorAll('.st-mini')].find((m) => m.offsetParent !== null); return el && mini ? [el.getBoundingClientRect().width, mini.getBoundingClientRect().width] : [0, 0]; }).catch((e) => [0, 0, String(e.message).slice(0, 160)]);
     say('a theme tile shows its preview across the tile', tile[0] > 0 && tile[1] >= tile[0] - 4, { tile: tile[0], preview: tile[1], error: tile[2] });
     // TH-B10: the tiles show the theme in the panel's own mode: dark tiles in dark mode.
     const mini = await page.evaluate(() => { const m = [...document.querySelectorAll('.st-tile .st-mini')].find((el) => el.offsetParent !== null); const c = m ? getComputedStyle(m).backgroundColor.match(/\d+/g).map(Number) : [255, 255, 255]; return (c[0] * .3 + c[1] * .59 + c[2] * .11) / 255; });

@@ -75,6 +75,7 @@ $pic = Css::build($clean(['bg' => 'image', 'image' => 3, 'blur' => 8, 'dim' => 3
 check(str_contains($pic, 'html:root::before') && str_contains($pic, 'blur(8px)'), 'a picture background is drawn behind everything, blurred');
 // TH-B6/B7: over a gradient or a picture the Admin page's box is a card, title band included; a plain one stays as the core draws it.
 check(str_contains($css, '.fi-main-ctn{background:var(--ps-surface)') && str_contains($pic, '.fi-main .fi-header{background:var(--ps-surface)'), 'over a gradient or picture the admin page is one card with its title band');
+check(! str_contains($plain, '--ps-console-card') && str_contains(Css::build($clean(['console' => 'follow']), $url, [], []), '--ps-console-card:#ffffff'), 'the console card and its command line get one colour');
 check(! str_contains($plain, 'fi-main-ctn'), 'over a plain background the admin page stays as Simplify draws it');
 check(str_contains($pic, 'rgb(244 244 245 / 0.30)') && str_contains($pic, 'html:root.dark::before{background:linear-gradient(rgb(0 0 0 / 0.30)'), 'Fade is a light veil in light mode and a dark one in dark mode');
 $up = Css::build($clean(['font' => 'u7']), $url, [7 => ['name' => 'Harbour Sans', 'url' => '/simplify-themes/file/x.woff2', 'format' => 'woff2']], []);
