@@ -546,13 +546,15 @@
             // The picture of the mode being changed: dark falls back to the light one.
             picture() { const t = this.data.theme; return this.mode === 'dark' && t.image_dark ? t.image_dark : t.image; },
             // A new font or picture is picked here, not on the server: Simplify takes what the server sends back as
-            // the new starting point, and the change would not count as one (TH-B13). After that answer, not during it.
+            // the new starting point, and the change would not count as one (TH-B13). After that answer, once the form
+            // has been drawn again: Simplify first takes the form as it is, then sees the pick as a change.
             uploaded(detail) {
                 setTimeout(() => {
+                    window.SimplifyUnsaved?.check();
                     if (detail.font) this.data.theme.font = detail.font;
                     if (detail.image) { this.mode = detail.dark ? 'dark' : 'light'; this.usePicture(detail.image); }
                     this.$nextTick(() => window.SimplifyUnsaved?.check());
-                }, 150);
+                }, 300);
             },
             usePicture(id) {
                 const t = this.data.theme;

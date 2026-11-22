@@ -172,7 +172,7 @@ async function run(browser, viewport, scheme, saves) {
       await settle(1500);
       await page.locator('.fi-modal-footer-actions button[type="submit"]:visible, .fi-modal-footer-actions button:visible').first().click().catch(() => {});
       await settle(1000);
-      const after = await page.evaluate(() => ({ sameForm: window.stBefore === document.querySelector('form.st'), pictures: document.querySelectorAll('.st-file .st-thumb').length }));
+      const after = await page.evaluate(() => ({ sameForm: window.stBefore === document.querySelector('form.st'), pictures: document.querySelectorAll('.st-file .st-thumb').length, coreDirty: window.SimplifyUnsaved?.dirty?.() }));
       say('a picture upload stays on the Background tab', (await page.locator('.st-tab').nth(TABS.indexOf('background')).getAttribute('aria-selected')) === 'true', after);
       say('a picture upload counts as a change', await page.locator(':text("Changes made"):visible').first().waitFor({ timeout: 5000 }).then(() => true).catch(() => false), after);
       // TH-B15: and it becomes the background of the mode being changed, here the panel's own mode.
