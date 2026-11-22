@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG hoặc WebP, tối đa 5 MB.',
     'use_light' => 'Dùng',
     'use_dark' => 'Dùng ở chế độ tối',
-    'dim' => 'Làm tối',
+    'dim' => 'Làm nhạt',
     'blur' => 'Làm mờ',
     'fit' => 'Căn chỉnh',
     'fit_fill' => 'Lấp đầy',

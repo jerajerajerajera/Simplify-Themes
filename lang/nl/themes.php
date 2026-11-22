@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG of WebP, tot 5 MB.',
     'use_light' => 'Gebruiken',
     'use_dark' => 'Gebruiken in donker',
-    'dim' => 'Donkerder',
+    'dim' => 'Waas',
     'blur' => 'Vervagen',
     'fit' => 'Passen',
     'fit_fill' => 'Vullen',

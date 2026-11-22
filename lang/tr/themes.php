@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG veya WebP, en fazla 5 MB.',
     'use_light' => 'Kullan',
     'use_dark' => 'Koyuda kullan',
-    'dim' => 'Karart',
+    'dim' => 'Soldur',
     'blur' => 'Bulanıklık',
     'fit' => 'Sığdırma',
     'fit_fill' => 'Doldur',

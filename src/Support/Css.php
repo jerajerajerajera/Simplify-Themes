@@ -119,13 +119,18 @@ final class Css
             return '';
         }
         $size = ['fill' => 'center / cover no-repeat', 'fit' => 'center / contain no-repeat', 'tile' => 'top left / auto repeat'][$t['fit']];
-        $dim = sprintf('linear-gradient(rgb(0 0 0 / %.2f), rgb(0 0 0 / %.2f))', $t['dim'] / 100, $t['dim'] / 100);
-        $layer = fn (string $url) => $dim.', url("'.addcslashes($url, '"\\').'") '.$size;
-        $css = 'html:root::before{content:"";position:fixed;inset:'.(-2 * $t['blur']).'px;z-index:-1;pointer-events:none;background:'.$layer($images[$t['image']])
+        // Fade lays the mode's own background colour over the picture: light in light mode, so text outside the cards
+        // (filters, footer) stays readable on a bright panel; dark in dark mode.
+        $layer = function (string $url, string $veil) use ($t, $size): string {
+            $rgb = implode(' ', Colour::rgb($veil));
+            $fade = sprintf('linear-gradient(rgb(%s / %.2f), rgb(%s / %.2f))', $rgb, $t['dim'] / 100, $rgb, $t['dim'] / 100);
+
+            return $fade.', url("'.addcslashes($url, '"\\').'") '.$size;
+        };
+        $dark = $t['image_dark'] !== null && isset($images[$t['image_dark']]) ? $images[$t['image_dark']] : $images[$t['image']];
+        $css = 'html:root::before{content:"";position:fixed;inset:'.(-2 * $t['blur']).'px;z-index:-1;pointer-events:none;background:'.$layer($images[$t['image']], $t['light']['bg'])
             .($t['blur'] > 0 ? ';filter:blur('.$t['blur'].'px)' : '').'}';
-        if ($t['image_dark'] !== null && isset($images[$t['image_dark']])) {
-            $css .= 'html:root.dark::before{background:'.$layer($images[$t['image_dark']]).'}';
-        }
+        $css .= 'html:root.dark::before{background:'.$layer($dark, '#000000').'}';
 
         return $css.'html:root body{background:transparent !important}';
     }

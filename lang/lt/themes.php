@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG arba WebP, iki 5 MB.',
     'use_light' => 'Naudoti',
     'use_dark' => 'Naudoti tamsiame',
-    'dim' => 'Patamsinti',
+    'dim' => 'Prislopinti',
     'blur' => 'Suliejimas',
     'fit' => 'Pritaikymas',
     'fit_fill' => 'Užpildyti',

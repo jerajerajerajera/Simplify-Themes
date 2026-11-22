@@ -250,7 +250,7 @@
                     <button type="button" class="st-btn st-close" x-on:click="sheet = false" aria-label="{{ $t('close') }}"><x-filament::icon icon="tabler-x" class="st-i" /></button>
                 </div>
                 <div class="st-pv" :style="vars()">
-                    <div class="st-pv-bg" x-show="data.theme.bg === 'image' && pictureUrl()" :style="{ backgroundImage: 'linear-gradient(rgb(0 0 0 / ' + (data.theme.dim / 100) + '), rgb(0 0 0 / ' + (data.theme.dim / 100) + ')), url(' + pictureUrl() + ')', filter: 'blur(' + data.theme.blur + 'px)', backgroundSize: data.theme.fit === 'fit' ? 'contain' : (data.theme.fit === 'tile' ? 'auto' : 'cover'), backgroundRepeat: data.theme.fit === 'tile' ? 'repeat' : 'no-repeat' }"></div>
+                    <div class="st-pv-bg" x-show="data.theme.bg === 'image' && pictureUrl()" :style="{ backgroundImage: 'linear-gradient(' + veil() + ', ' + veil() + '), url(' + pictureUrl() + ')', filter: 'blur(' + data.theme.blur + 'px)', backgroundSize: data.theme.fit === 'fit' ? 'contain' : (data.theme.fit === 'tile' ? 'auto' : 'cover'), backgroundRepeat: data.theme.fit === 'tile' ? 'repeat' : 'no-repeat' }"></div>
                     @if ($core)
                         <div class="st-pv-in">
                             <div class="st-pv-top"><span class="st-pv-name">{{ filament()->getBrandName() }}</span><span class="st-pv-icon"><x-filament::icon icon="tabler-bell" class="st-i" /></span><span class="st-pv-btn">{{ $t('pv_create') }}</span></div>
@@ -339,6 +339,8 @@
                     { key: 'button', label: @js(__('simplify-themes::themes.contrast_button')), ratio: this.ratio(this.on(p.accent), p.accent) },
                 ];
             },
+            // Fade: the light background colour over the picture in light mode, black in dark mode (as on the panel).
+            veil() { const [r, g, b] = this.mode === 'light' ? this.rgb(this.data.theme.light.bg) : [0, 0, 0]; return 'rgb(' + r + ' ' + g + ' ' + b + ' / ' + (this.data.theme.dim / 100) + ')'; },
             pictureUrl() {
                 const t = this.data.theme;
                 const id = this.mode === 'dark' && t.image_dark ? t.image_dark : t.image;

@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG、JPG 或 WebP,最大 5 MB。',
     'use_light' => '使用',
     'use_dark' => '深色時使用',
-    'dim' => '變暗',
+    'dim' => '淡化',
     'blur' => '模糊',
     'fit' => '調整',
     'fit_fill' => '填滿',

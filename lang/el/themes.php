@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG ή WebP, έως 5 MB.',
     'use_light' => 'Χρήση',
     'use_dark' => 'Χρήση στο σκοτεινό',
-    'dim' => 'Σκούρεμα',
+    'dim' => 'Ξεθώριασμα',
     'blur' => 'Θόλωμα',
     'fit' => 'Προσαρμογή',
     'fit_fill' => 'Γέμισμα',

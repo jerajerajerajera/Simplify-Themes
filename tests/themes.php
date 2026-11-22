@@ -70,7 +70,8 @@ check(substr_count($css, '{') === substr_count($css, '}'), 'braces are balanced'
 $plain = Css::build($clean([]), $url, [], []);
 check(! str_contains($plain, '@font-face') && ! str_contains($plain, 'background:'), "Simplify's own look adds no fonts and no background");
 $pic = Css::build($clean(['bg' => 'image', 'image' => 3, 'blur' => 8, 'dim' => 30]), $url, [], [3 => '/simplify-themes/file/'.str_repeat('a', 32).'.webp']);
-check(str_contains($pic, 'html:root::before') && str_contains($pic, 'blur(8px)') && str_contains($pic, 'rgb(0 0 0 / 0.30)'), 'a picture background is drawn behind everything, darkened and blurred');
+check(str_contains($pic, 'html:root::before') && str_contains($pic, 'blur(8px)'), 'a picture background is drawn behind everything, blurred');
+check(str_contains($pic, 'rgb(244 244 245 / 0.30)') && str_contains($pic, 'html:root.dark::before{background:linear-gradient(rgb(0 0 0 / 0.30)'), 'Fade is a light veil in light mode and a dark one in dark mode');
 $up = Css::build($clean(['font' => 'u7']), $url, [7 => ['name' => 'Harbour Sans', 'url' => '/simplify-themes/file/x.woff2', 'format' => 'woff2']], []);
 check(str_contains($up, 'font-family:"Themes Harbour Sans"') && str_contains($up, '"Themes Harbour Sans", ui-sans-serif'), 'an uploaded font gets its own family name');
 

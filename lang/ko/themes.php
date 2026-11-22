@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG, WebP, 최대 5MB.',
     'use_light' => '사용',
     'use_dark' => '다크에서 사용',
-    'dim' => '어둡게',
+    'dim' => '흐리게',
     'blur' => '흐림',
     'fit' => '맞춤',
     'fit_fill' => '채우기',

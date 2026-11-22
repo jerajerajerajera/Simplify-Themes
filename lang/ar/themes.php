@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG أو JPG أو WebP، حتى 5 ميغابايت.',
     'use_light' => 'استخدام',
     'use_dark' => 'استخدام في الداكن',
-    'dim' => 'تعتيم',
+    'dim' => 'تخفيف',
     'blur' => 'تمويه',
     'fit' => 'الملاءمة',
     'fit_fill' => 'ملء',

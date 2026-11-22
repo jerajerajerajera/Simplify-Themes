@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG、JPG、WebP、5 MB まで。',
     'use_light' => '使う',
     'use_dark' => 'ダークで使う',
-    'dim' => '暗くする',
+    'dim' => '淡くする',
     'blur' => 'ぼかし',
     'fit' => '配置',
     'fit_fill' => '埋める',

@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG sau WebP, până la 5 MB.',
     'use_light' => 'Folosește',
     'use_dark' => 'Folosește în întunecat',
-    'dim' => 'Întunecă',
+    'dim' => 'Atenuare',
     'blur' => 'Estompare',
     'fit' => 'Potrivire',
     'fit_fill' => 'Umple',

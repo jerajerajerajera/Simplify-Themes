@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG eller WebP, opptil 5 MB.',
     'use_light' => 'Bruk',
     'use_dark' => 'Bruk i mørkt',
-    'dim' => 'Gjør mørkere',
+    'dim' => 'Tone ned',
     'blur' => 'Uskarphet',
     'fit' => 'Tilpasning',
     'fit_fill' => 'Fyll',

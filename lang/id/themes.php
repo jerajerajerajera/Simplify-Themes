@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG, atau WebP, hingga 5 MB.',
     'use_light' => 'Gunakan',
     'use_dark' => 'Gunakan di gelap',
-    'dim' => 'Gelapkan',
+    'dim' => 'Pudarkan',
     'blur' => 'Buram',
     'fit' => 'Penyesuaian',
     'fit_fill' => 'Isi',

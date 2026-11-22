@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG vagy WebP, legfeljebb 5 MB.',
     'use_light' => 'Használat',
     'use_dark' => 'Használat sötétben',
-    'dim' => 'Sötétítés',
+    'dim' => 'Halványítás',
     'blur' => 'Elmosás',
     'fit' => 'Illesztés',
     'fit_fill' => 'Kitöltés',

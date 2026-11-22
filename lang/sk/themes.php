@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG alebo WebP, do 5 MB.',
     'use_light' => 'Použiť',
     'use_dark' => 'Použiť v tmavom',
-    'dim' => 'Stmaviť',
+    'dim' => 'Stlmiť',
     'blur' => 'Rozmazanie',
     'fit' => 'Prispôsobenie',
     'fit_fill' => 'Vyplniť',

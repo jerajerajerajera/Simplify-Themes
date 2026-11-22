@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG o WebP, fino a 5 MB.',
     'use_light' => 'Usa',
     'use_dark' => 'Usa in scuro',
-    'dim' => 'Scurisci',
+    'dim' => 'Attenua',
     'blur' => 'Sfocatura',
     'fit' => 'Adattamento',
     'fit_fill' => 'Riempi',

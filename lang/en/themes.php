@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG or WebP, up to 5 MB.',
     'use_light' => 'Use',
     'use_dark' => 'Use in dark',
-    'dim' => 'Darken',
+    'dim' => 'Fade',
     'blur' => 'Blur',
     'fit' => 'Fit',
     'fit_fill' => 'Fill',

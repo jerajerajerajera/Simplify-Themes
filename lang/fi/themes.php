@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG tai WebP, enintään 5 Mt.',
     'use_light' => 'Käytä',
     'use_dark' => 'Käytä tummassa',
-    'dim' => 'Tummenna',
+    'dim' => 'Haalista',
     'blur' => 'Sumennus',
     'fit' => 'Sovitus',
     'fit_fill' => 'Täytä',

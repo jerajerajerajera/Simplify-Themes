@@ -22,7 +22,7 @@ shadows, see-through cards and the console.
   danger), each with a light and a dark value, and a readability check against WCAG AA (4.5:1). Without Simplify five
   colours (accent, grey tint, running, warning, danger), from which Pelican makes its full palette. A warning never
   blocks Save.
-- **Background**: plain, a gradient, or one of your pictures (also a separate one for dark), with darken, blur and fit.
+- **Background**: plain, a gradient, or one of your pictures (also a separate one for dark), with fade (a light veil in light mode, a dark one in dark mode), blur and fit.
 - **Fonts**: a text font and a heading font from free fonts that ship with the plugin, or a font you upload.
 - **Shapes & console** (with Simplify): corners, spacing, shadows, lines, console colours and console font.
 - **Let people pick**: when you turn it on, everyone can choose one of the themes for themselves under **My theme** in

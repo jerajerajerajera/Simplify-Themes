@@ -93,7 +93,7 @@ return [
     'image_upload_help' => 'PNG, JPG или WebP, до 5 MB.',
     'use_light' => 'Користи',
     'use_dark' => 'Користи у тамној',
-    'dim' => 'Затамни',
+    'dim' => 'Пригуши',
     'blur' => 'Замућење',
     'fit' => 'Уклапање',
     'fit_fill' => 'Попуни',
