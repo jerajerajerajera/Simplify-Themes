@@ -256,8 +256,32 @@ async function run(browser, viewport, scheme, saves) {
   await context.close();
 }
 
+// Screenshots for the Hub listing (artifact screens-simplify, hub-*.png): the real editor at twice the pixels, on the
+// ready-made default theme, before any step below changes it. Only with Simplify, the way the plugin works best.
+async function hubShots(browser) {
+  for (const [scheme, tabs] of [['dark', ['themes', 'background']], ['light', ['colours']]]) {
+    stand = `hub-${scheme}`;
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: scheme, deviceScaleFactor: 2 });
+    await context.addInitScript((mode) => { try { localStorage.setItem('theme', mode); } catch (e) {} }, scheme);
+    page = await context.newPage();
+    try {
+      await login();
+      await goto('/admin/simplify-themes');
+      for (const tab of tabs) {
+        await page.locator('.st-tab').nth(TABS.indexOf(tab)).click();
+        await sleep(900);
+        await page.screenshot({ path: path.join(out, `hub-${scheme}-${tab}.png`) });
+      }
+    } catch (e) {
+      console.log(`NOTE hub screenshots ${scheme}: ${String(e.message).slice(0, 200)}`);
+    }
+    await context.close();
+  }
+}
+
 (async () => {
   const browser = await chromium.launch();
+  if (core) await hubShots(browser);
   let first = true;
   for (const viewport of [{ name: 'd1440', width: 1440, height: 900 }, { name: 'phone390', width: 390, height: 844 }]) {
     for (const scheme of ['dark', 'light']) {
