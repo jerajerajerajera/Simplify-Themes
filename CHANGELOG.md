@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The admin menu's group headings, the health bar under it and the phone's bottom bar use the theme's heading font.
 - **Status page**: a new switch puts the default theme on Simplify's public status page, in light and dark as the
   visitor's device prefers. Off by default; it shows with a Simplify that has the status page hook.
 

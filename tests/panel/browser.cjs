@@ -255,6 +255,18 @@ async function run(browser, viewport, scheme, saves) {
         await shot('status-page');
       } else say('the Status page switch shows with the status page hook', false, { error: 'no switch' });
     }
+    if (core && phone) {
+      // The admin menu's group headings, its health bar and the bottom bar wear the theme's heading font.
+      await goto('/admin/simplify-themes');
+      await page.locator('.ps-tabbar .ps-tab.is-active').click().catch(() => {});
+      await sleep(700);
+      const fonts = await page.evaluate(() => {
+        const f = (sel) => { const el = document.querySelector(sel); return el ? getComputedStyle(el).fontFamily : null; };
+        return { heading: f('h1'), group: f('.ps-host-group-head'), health: f('.ps-host-health-bar'), tabbar: f('.ps-tabbar .ps-tab') };
+      });
+      say('menu groups, health bar and bottom bar wear the heading font', !!fonts.heading && fonts.group === fonts.heading && fonts.tabbar === fonts.heading && (fonts.health === null || fonts.health === fonts.heading), fonts);
+      await shot('admin-menu');
+    }
     // The ready-made default (checks.yml) on the pages everyone sees.
     await goto('/');
     say('the overview opens with the default theme', await page.locator('style#simplify-themes').count() === 1);

@@ -59,6 +59,9 @@ final class Css
 
         if ($t['head'] !== 'inter') {
             $css .= ':is(h1, h2, h3, .fi-header-heading, .fi-section-header-heading, .fi-modal-heading){font-family:'.Fonts::stack($t['head'], $names).'}';
+            // The admin menu's group headings, the health bar under it and the phone's bottom bar carry the heading
+            // font too; the core sets a font on these elements themselves, so the selector is one step stronger.
+            $css .= ':root :is(.ps-host-group-head, .ps-host-health-bar, .ps-tabbar .ps-tab){font-family:'.Fonts::stack($t['head'], $names).'}';
         }
 
         return $css.self::background($t, $images).self::card($t).self::halo($t).Effects::css($t);
