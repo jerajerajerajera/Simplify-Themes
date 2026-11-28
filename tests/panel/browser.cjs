@@ -167,11 +167,18 @@ async function run(browser, viewport, scheme, saves) {
       await page.evaluate(() => { window.stBefore = document.querySelector('form.st'); });
       const png = await page.screenshot({ clip: { x: 0, y: 0, width: 96, height: 64 } });
       await page.locator('.st-upload-image, [wire\\:click*="uploadImage"]').first().click();
-      await page.locator('.fi-modal input[type="file"]').first().waitFor({ state: 'attached', timeout: 8000 }).catch(() => {});
-      await page.locator('.fi-modal input[type="file"]').first().setInputFiles({ name: 'harbour.png', mimeType: 'image/png', buffer: png }).catch(() => {});
-      await settle(1500);
+      // FilePond builds its own file field once the modal is open; a file set before that is lost ("file is required").
+      const field = page.locator('.fi-modal input.filepond--browser');
+      await field.waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
+      await sleep(300);
+      await field.setInputFiles({ name: 'harbour.png', mimeType: 'image/png', buffer: png }).catch(() => {});
+      const uploaded = await page.locator('.fi-modal .filepond--item[data-filepond-item-state="processing-complete"]').waitFor({ timeout: 20000 }).then(() => true).catch(() => false);
+      say('a picture reaches the upload field', uploaded);
       await page.locator('.fi-modal-footer-actions button[type="submit"]:visible, .fi-modal-footer-actions button:visible').first().click().catch(() => {});
+      await field.waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
       await settle(1000);
+      // Whatever happened, the modal does not stay over the page for the steps after this one.
+      if (await field.count()) { await page.keyboard.press('Escape'); await sleep(400); }
       const after = await page.evaluate(() => ({ sameForm: window.stBefore === document.querySelector('form.st'), pictures: document.querySelectorAll('.st-file .st-thumb').length, coreDirty: window.SimplifyUnsaved?.dirty?.() }));
       say('a picture upload stays on the Background tab', (await page.locator('.st-tab').nth(TABS.indexOf('background')).getAttribute('aria-selected')) === 'true', after);
       say('a picture upload counts as a change', await page.locator(':text("Changes made"):visible').first().waitFor({ timeout: 5000 }).then(() => true).catch(() => false), after);
