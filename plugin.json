@@ -2,7 +2,7 @@
     "id": "simplify-themes",
     "name": "Simplify Themes",
     "author": "jera",
-    "version": "2.0.0-beta.1-dev",
+    "version": "2.0.0-beta.1",
     "description": "Make your own look for the panel: colours, background, fonts and shapes, with a live preview. Works best with Simplify.",
     "category": "plugin",
     "namespace": "Simplify\\Themes",
