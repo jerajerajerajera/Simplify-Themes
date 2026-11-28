@@ -174,7 +174,7 @@ check(str_contains($js, 'prefers-reduced-motion') && str_contains($js, 'visibili
 
 // The admin menu's group headings, its health bar and the phone's bottom bar follow the heading font (Jeroen 28-11).
 $heads = Css::build($clean(['head' => 'outfit']), $url, [], []);
-check(preg_match('/:is\([^)]*\.ps-host-group-head, \.ps-host-health-bar, \.ps-tabbar\)\{font-family:"Simplify Outfit"/', $heads) === 1, 'menu group headings, health bar and bottom bar wear the heading font');
+check(str_contains($heads, ':root :is(.ps-host-group-head, .ps-host-health-bar, .ps-tabbar .ps-tab){font-family:"Simplify Outfit"'), 'menu group headings, health bar and bottom bar wear the heading font');
 
 // TH-S1: the status page wears the default theme. It has no dark class, so both modes go by the visitor's device;
 // the list (embed.js) reads --simplify-embed-*.
