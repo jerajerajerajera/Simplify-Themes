@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Dette temaet',
     'let_people_pick' => 'La folk velge',
     'let_people_pick_help' => 'Alle kan velge et av disse temaene for seg selv under Mitt tema i kontomenyen.',
+    'status_page' => 'Statusside',
+    'status_page_help' => 'Bruk standardtemaet på den offentlige statussiden (/status og dens egen adresse). Tittel, logo, intro og din egen CSS forblir som de er.',
     'new' => 'Nytt tema',
     'new_name' => 'Nytt tema',
     'duplicate' => 'Dupliser',

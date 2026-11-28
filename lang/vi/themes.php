@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Giao diện này',
     'let_people_pick' => 'Cho phép tự chọn',
     'let_people_pick_help' => 'Mọi người có thể tự chọn một trong các giao diện này ở Giao diện của tôi trong menu tài khoản.',
+    'status_page' => 'Trang trạng thái',
+    'status_page_help' => 'Dùng giao diện mặc định trên trang trạng thái công khai (/status và địa chỉ riêng của nó). Tiêu đề, logo, phần giới thiệu và CSS của bạn vẫn giữ nguyên.',
     'new' => 'Giao diện mới',
     'new_name' => 'Giao diện mới',
     'duplicate' => 'Nhân bản',

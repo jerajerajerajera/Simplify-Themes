@@ -70,6 +70,12 @@
                             <span>{{ $t('let_people_pick') }}</span>
                             <label class="st-switch"><input type="checkbox" x-model="data.pick"><i></i><span class="st-hint">{{ $t('let_people_pick_help') }}</span></label>
                         </div>
+                        @if (\Simplify\Themes\Support\StatusPage::supported())
+                            <div class="st-field">
+                                <span>{{ $t('status_page') }}</span>
+                                <label class="st-switch"><input type="checkbox" x-model="data.status"><i></i><span class="st-hint">{{ $t('status_page_help') }}</span></label>
+                            </div>
+                        @endif
                     </div>
                 </section>
 

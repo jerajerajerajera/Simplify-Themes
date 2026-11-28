@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Tämä teema',
     'let_people_pick' => 'Anna ihmisten valita',
     'let_people_pick_help' => 'Jokainen voi valita itselleen yhden näistä teemoista kohdasta Oma teema tilivalikossa.',
+    'status_page' => 'Tilasivu',
+    'status_page_help' => 'Käytä oletusteemaa julkisella tilasivulla (/status ja sen oma osoite). Otsikko, logo, johdanto ja oma CSS:si pysyvät ennallaan.',
     'new' => 'Uusi teema',
     'new_name' => 'Uusi teema',
     'duplicate' => 'Monista',

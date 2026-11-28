@@ -29,6 +29,8 @@ return [
     'this_theme' => '此主題',
     'let_people_pick' => '允許自選',
     'let_people_pick_help' => '每個人都可以在帳號選單的「我的主題」中為自己選擇其中一個主題。',
+    'status_page' => '狀態頁',
+    'status_page_help' => '在公開狀態頁（/status 及其專屬位址）上使用預設主題。標題、標誌、簡介和你自己的 CSS 保持不變。',
     'new' => '新主題',
     'new_name' => '新主題',
     'duplicate' => '複製',

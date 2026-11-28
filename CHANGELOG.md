@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Status page**: a new switch puts the default theme on Simplify's public status page, in light and dark as the
+  visitor's device prefers. Off by default; it shows with a Simplify that has the status page hook.
+
 ## 2.0.0-beta.1
 
 - First version on the Hub: your own themes for the panel, with colours for light and dark, a background, fonts (bundled or

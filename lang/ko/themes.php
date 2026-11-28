@@ -29,6 +29,8 @@ return [
     'this_theme' => '이 테마',
     'let_people_pick' => '직접 고르게 하기',
     'let_people_pick_help' => '누구나 계정 메뉴의 내 테마에서 이 테마 중 하나를 자신용으로 고를 수 있습니다.',
+    'status_page' => '상태 페이지',
+    'status_page_help' => '공개 상태 페이지(/status 및 자체 주소)에 기본 테마를 사용합니다. 제목, 로고, 소개와 직접 넣은 CSS는 그대로 유지됩니다.',
     'new' => '새 테마',
     'new_name' => '새 테마',
     'duplicate' => '복제',

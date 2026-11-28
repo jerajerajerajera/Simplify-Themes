@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Tento motív',
     'let_people_pick' => 'Nechať vybrať',
     'let_people_pick_help' => 'Každý si môže vybrať jeden z týchto motívov v Môj motív v ponuke účtu.',
+    'status_page' => 'Stavová stránka',
+    'status_page_help' => 'Použiť predvolenú tému na verejnej stavovej stránke (/status a jej vlastná adresa). Názov, logo, úvod a vaše vlastné CSS zostanú, ako sú.',
     'new' => 'Nový motív',
     'new_name' => 'Nový motív',
     'duplicate' => 'Duplikovať',

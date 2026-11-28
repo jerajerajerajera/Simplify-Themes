@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Această temă',
     'let_people_pick' => 'Lasă oamenii să aleagă',
     'let_people_pick_help' => 'Oricine poate alege una dintre aceste teme la Tema mea, în meniul contului.',
+    'status_page' => 'Pagina de stare',
+    'status_page_help' => 'Folosește tema implicită pe pagina publică de stare (/status și adresa ei proprie). Titlul, logoul, introducerea și CSS-ul tău rămân la fel.',
     'new' => 'Temă nouă',
     'new_name' => 'Temă nouă',
     'duplicate' => 'Duplică',
