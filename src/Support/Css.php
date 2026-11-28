@@ -58,7 +58,8 @@ final class Css
         $css .= self::rule(':root:root:root.ps-oled.dark, :root.ps-oled:root :is(.ps, .ps-ui).dark', ['--ps-bg' => '#000', '--ps-field' => '#0a0a0c']);
 
         if ($t['head'] !== 'inter') {
-            $css .= ':is(h1, h2, h3, .fi-header-heading, .fi-section-header-heading, .fi-modal-heading){font-family:'.Fonts::stack($t['head'], $names).'}';
+            // The admin menu's group headings, the health bar under it and the phone's bottom bar carry the heading font too.
+            $css .= ':is(h1, h2, h3, .fi-header-heading, .fi-section-header-heading, .fi-modal-heading, .ps-host-group-head, .ps-host-health-bar, .ps-tabbar){font-family:'.Fonts::stack($t['head'], $names).'}';
         }
 
         return $css.self::background($t, $images).self::card($t).self::halo($t).Effects::css($t);
