@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Questo tema',
     'let_people_pick' => 'Lascia scegliere',
     'let_people_pick_help' => 'Ognuno può scegliere uno di questi temi in Il mio tema, nel menu dell\'account.',
+    'status_page' => 'Pagina di stato',
+    'status_page_help' => 'Usa il tema predefinito sulla pagina di stato pubblica (/status e il suo indirizzo). Titolo, logo, introduzione e il tuo CSS restano come sono.',
     'new' => 'Nuovo tema',
     'new_name' => 'Nuovo tema',
     'duplicate' => 'Duplica',

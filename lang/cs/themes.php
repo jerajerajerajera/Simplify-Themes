@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Tento motiv',
     'let_people_pick' => 'Nechat vybrat',
     'let_people_pick_help' => 'Každý si může vybrat jeden z těchto motivů v Můj motiv v nabídce účtu.',
+    'status_page' => 'Stavová stránka',
+    'status_page_help' => 'Použít výchozí motiv na veřejné stavové stránce (/status a její vlastní adresa). Název, logo, úvod a vaše vlastní CSS zůstanou, jak jsou.',
     'new' => 'Nový motiv',
     'new_name' => 'Nový motiv',
     'duplicate' => 'Duplikovat',

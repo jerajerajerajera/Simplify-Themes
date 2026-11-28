@@ -172,12 +172,16 @@
             if (body && body !== 'transparent' && body !== 'rgba(0, 0, 0, 0)') html.style.backgroundColor = body;
             html.classList.add('st-fx-on');
         };
-        let dark = html.classList.contains('dark');
+        // The status page has no dark class: there the visitor's device decides (fx.media).
+        const media = fx.media ? matchMedia('(prefers-color-scheme: dark)') : null;
+        const isDark = () => (media ? media.matches : html.classList.contains('dark'));
+        let dark = isDark();
         behind();
         // Only a switch between light and dark changes the body's colour; our own class change is ignored.
-        const observer = new MutationObserver(() => { if (html.classList.contains('dark') !== dark) { dark = !dark; behind(); } });
+        const observer = new MutationObserver(() => { if (isDark() !== dark) { dark = !dark; behind(); } });
         observer.observe(html, { attributes: true, attributeFilter: ['class'] });
-        const r = run(cv, () => ({ ...fx, ...fx[html.classList.contains('dark') ? 'dark' : 'light'] }));
+        if (media) media.addEventListener('change', () => { dark = media.matches; behind(); });
+        const r = run(cv, () => ({ ...fx, ...fx[isDark() ? 'dark' : 'light'] }));
         r.page = true;
         page = { cv, fx: cv.dataset.fx, run: r, observer, behind };
     }

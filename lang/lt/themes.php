@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Ši tema',
     'let_people_pick' => 'Leisti rinktis',
     'let_people_pick_help' => 'Kiekvienas gali pasirinkti vieną iš šių temų skiltyje Mano tema paskyros meniu.',
+    'status_page' => 'Būsenos puslapis',
+    'status_page_help' => 'Naudoti numatytąją temą viešame būsenos puslapyje (/status ir jo paties adresas). Pavadinimas, logotipas, įžanga ir jūsų CSS lieka kaip yra.',
     'new' => 'Nauja tema',
     'new_name' => 'Nauja tema',
     'duplicate' => 'Dubliuoti',

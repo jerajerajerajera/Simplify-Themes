@@ -60,8 +60,8 @@ final class Head
         return new HtmlString($theme === null ? '' : Effects::tag($theme['data'], Effects::scriptUrl()));
     }
 
-    /** @param array<string, mixed> $data a clean theme */
-    public static function css(array $data): string
+    /** @param array<string, mixed> $data a clean theme; $status: the core's public status page instead of the panel */
+    public static function css(array $data, bool $status = false): string
     {
         $uploaded = [];
         $images = [];
@@ -73,6 +73,8 @@ final class Head
             }
         }
 
-        return Css::build($data, fn (string $file) => url('/simplify-themes/font/'.$file), $uploaded, $images);
+        $font = fn (string $file) => url('/simplify-themes/font/'.$file);
+
+        return $status ? Css::status($data, $font, $uploaded, $images) : Css::build($data, $font, $uploaded, $images);
     }
 }

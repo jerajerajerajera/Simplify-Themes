@@ -9,6 +9,7 @@ use Simplify\Core\Addons\Addon;
 use Simplify\Core\Addons\Button;
 use Simplify\Themes\Filament\Admin\Pages\Themes;
 use Simplify\Themes\Filament\App\Pages\MyTheme;
+use Simplify\Themes\Support\StatusPage;
 
 /**
  * How Themes shows up inside Simplify. Only loaded when Simplify asks for its add-ons, so Themes also works without
@@ -47,5 +48,16 @@ final class ThemesAddon extends Addon
         return MyTheme::canAccess()
             ? [new Button(__('simplify-themes::themes.my_theme'), MyTheme::getUrl(panel: 'app'), 'tabler-palette')]
             : [];
+    }
+
+    /** The default theme on the public status page, while "Status page" is on (Simplify add-on API 11). */
+    public function statusPageHead(): string
+    {
+        return StatusPage::head();
+    }
+
+    public function statusPageBody(): string
+    {
+        return StatusPage::body();
     }
 }

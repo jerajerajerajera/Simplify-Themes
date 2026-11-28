@@ -18,6 +18,7 @@ use RuntimeException;
 use Simplify\Themes\Support\Files;
 use Simplify\Themes\Support\Fonts;
 use Simplify\Themes\Support\Presets;
+use Simplify\Themes\Support\StatusPage;
 use Simplify\Themes\Support\Store;
 use Simplify\Themes\Support\Theme;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -42,7 +43,7 @@ final class Themes extends Page
     public ?int $themeId = null;
 
     /** @var array<string, mixed> what the editor holds (name, theme, pick); the browser can send anything here, compared for "Changes made" */
-    public array $data = ['name' => '', 'theme' => [], 'pick' => false];
+    public array $data = ['name' => '', 'theme' => [], 'pick' => false, 'status' => false];
 
     public static function canAccess(): bool
     {
@@ -92,7 +93,7 @@ final class Themes extends Page
             $theme = Store::find($id);
         }
         $this->themeId = $theme['id'];
-        $this->data = ['name' => $theme['name'], 'theme' => $theme['data'], 'pick' => Store::settings()['pick']];
+        $this->data = ['name' => $theme['name'], 'theme' => $theme['data'], 'pick' => Store::settings()['pick'], 'status' => Store::settings()['status']];
         $this->resetErrorBag();
         // The editor compares against what was opened, for its own "Changes made" bar without Simplify.
         $this->dispatch('simplify-themes-opened');
@@ -117,7 +118,7 @@ final class Themes extends Page
             return;
         }
         $this->themeId = Store::save($this->themeId, $name, (array) ($this->data['theme'] ?? []));
-        Store::saveSettings(Store::settings()['default'], (bool) ($this->data['pick'] ?? false));
+        Store::saveSettings(Store::settings()['default'], (bool) ($this->data['pick'] ?? false), StatusPage::supported() ? (bool) ($this->data['status'] ?? false) : null);
         $this->open($this->themeId);
         Notification::make()->title(__(self::T.'saved'))->success()->send();
     }
@@ -129,7 +130,8 @@ final class Themes extends Page
         $theme = Theme::clean((array) ($this->data['theme'] ?? []), Theme::fontKeys(Store::uploadedFonts()), array_column(Files::all('image'), 'id'));
 
         return $stored === null || $stored['name'] !== trim((string) ($this->data['name'] ?? ''))
-            || $stored['data'] !== $theme || Store::settings()['pick'] !== (bool) ($this->data['pick'] ?? false);
+            || $stored['data'] !== $theme || Store::settings()['pick'] !== (bool) ($this->data['pick'] ?? false)
+            || (StatusPage::supported() && Store::settings()['status'] !== (bool) ($this->data['status'] ?? false));
     }
 
     /** Actions that leave this theme run only without unsaved changes: nothing is lost without asking (P-38). */

@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Ce thème',
     'let_people_pick' => 'Laisser choisir',
     'let_people_pick_help' => 'Chacun peut choisir l\'un de ces thèmes sous Mon thème dans le menu du compte.',
+    'status_page' => 'Page de statut',
+    'status_page_help' => 'Utiliser le thème par défaut sur la page de statut publique (/status et sa propre adresse). Le titre, le logo, l’intro et votre propre CSS restent tels quels.',
     'new' => 'Nouveau thème',
     'new_name' => 'Nouveau thème',
     'duplicate' => 'Dupliquer',

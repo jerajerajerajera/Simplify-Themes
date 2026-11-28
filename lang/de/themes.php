@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Dieses Theme',
     'let_people_pick' => 'Selbst wählen lassen',
     'let_people_pick_help' => 'Alle können unter Mein Theme im Kontomenü eines dieser Themes für sich wählen.',
+    'status_page' => 'Statusseite',
+    'status_page_help' => 'Das Standard-Theme auf der öffentlichen Statusseite verwenden (/status und ihre eigene Adresse). Titel, Logo, Intro und dein eigenes CSS bleiben, wie sie sind.',
     'new' => 'Neues Theme',
     'new_name' => 'Neues Theme',
     'duplicate' => 'Duplizieren',

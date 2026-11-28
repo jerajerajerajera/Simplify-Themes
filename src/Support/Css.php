@@ -164,29 +164,73 @@ final class Css
     /** The page behind everything, per mode: a gradient or a picture. A plain background needs nothing: --ps-bg and Filament's grey already paint it. */
     private static function background(array $t, array $images): string
     {
-        $size = ['fill' => 'center / cover no-repeat', 'fit' => 'center / contain no-repeat', 'tile' => 'top left / auto repeat'][$t['fit']];
-        // Fade lays the mode's own background colour over the picture: light in light mode, so text outside the cards
-        // (filters, footer) stays readable on a bright panel; dark in dark mode.
-        $layer = function (string $url, string $veil) use ($t, $size): string {
-            $rgb = implode(' ', Colour::rgb($veil));
-            $fade = sprintf('linear-gradient(rgb(%s / %.2f), rgb(%s / %.2f))', $rgb, $t['dim'] / 100, $rgb, $t['dim'] / 100);
-
-            return $fade.', url("'.addcslashes($url, '"\\').'") '.$size;
-        };
         $css = '';
         foreach (['light' => ':not(.dark)', 'dark' => '.dark'] as $mode => $is) {
-            $kind = self::bg($t, $mode);
-            if ($kind === 'gradient') {
-                $css .= ':root:root:root'.$is.'{background:'.Gradient::css($t['grad'][$mode]).' fixed !important}';
-            }
-            $id = $mode === 'dark' && $t['image_dark'] !== null && isset($images[$t['image_dark']]) ? $t['image_dark'] : $t['image'];
-            if ($kind === 'image' && $id !== null && isset($images[$id])) {
-                $css .= 'html:root'.$is.'::before{content:"";position:fixed;inset:'.(-2 * $t['blur']).'px;z-index:-1;pointer-events:none;background:'
-                    .$layer($images[$id], $mode === 'dark' ? '#000000' : $t['light']['bg']).($t['blur'] > 0 ? ';filter:blur('.$t['blur'].'px)' : '').'}';
-            }
+            $css .= self::paint($t, $images, $mode, ':root:root:root'.$is, 'html:root'.$is);
         }
 
         return $css === '' ? '' : $css.'html:root body{background:transparent !important}';
+    }
+
+    /** The gradient (on $root) or the picture (on $picture::before) of one mode; nothing for a plain background. */
+    private static function paint(array $t, array $images, string $mode, string $root, string $picture): string
+    {
+        $kind = self::bg($t, $mode);
+        if ($kind === 'gradient') {
+            return $root.'{background:'.Gradient::css($t['grad'][$mode]).' fixed !important}';
+        }
+        $id = $mode === 'dark' && $t['image_dark'] !== null && isset($images[$t['image_dark']]) ? $t['image_dark'] : $t['image'];
+        if ($kind !== 'image' || $id === null || ! isset($images[$id])) {
+            return '';
+        }
+        $size = ['fill' => 'center / cover no-repeat', 'fit' => 'center / contain no-repeat', 'tile' => 'top left / auto repeat'][$t['fit']];
+        // Fade lays the mode's own background colour over the picture: light in light mode, so text outside the cards
+        // (filters, footer) stays readable on a bright panel; dark in dark mode.
+        $rgb = implode(' ', Colour::rgb($mode === 'dark' ? '#000000' : $t['light']['bg']));
+        $fade = sprintf('linear-gradient(rgb(%s / %.2f), rgb(%s / %.2f))', $rgb, $t['dim'] / 100, $rgb, $t['dim'] / 100);
+
+        return $picture.'::before{content:"";position:fixed;inset:'.(-2 * $t['blur']).'px;z-index:-1;pointer-events:none;background:'
+            .$fade.', url("'.addcslashes($images[$id], '"\\').'") '.$size.($t['blur'] > 0 ? ';filter:blur('.$t['blur'].'px)' : '').'}';
+    }
+
+    /**
+     * The public status page of the core (TH-S1): its list reads --simplify-embed-* (embed.js, add-on API 11) and the
+     * page itself is plain HTML without Filament or a dark class, so light and dark follow the visitor's device.
+     * Title, logo, intro and the admin's own CSS stay; only colours, background, fonts and the effect change.
+     *
+     * @param  array<string, mixed>  $t  a clean theme
+     * @param  callable(string): string  $bundledUrl
+     * @param  array<int, array{name: string, url: string, format: string}>  $uploaded
+     * @param  array<int, string>  $images
+     */
+    public static function status(array $t, callable $bundledUrl, array $uploaded, array $images): string
+    {
+        $names = array_map(fn (array $f) => $f['name'], $uploaded);
+        $css = self::faces($t, $bundledUrl, $uploaded);
+        $font = $t['font'] === 'inter' ? null : Fonts::stack($t['font'], $names);
+        $head = $t['head'] === 'inter' ? $font : Fonts::stack($t['head'], $names);
+        if ($font !== null) {
+            $css .= ':root:root body{font-family:'.$font.' !important}';
+        }
+        if ($head !== null) {
+            $css .= ':root:root h1{font-family:'.$head.' !important}';
+        }
+        foreach (['light' => '@media not all and (prefers-color-scheme:dark)', 'dark' => '@media (prefers-color-scheme:dark)'] as $mode => $media) {
+            $p = $t[$mode];
+            $palette = self::palette($t, $mode);
+            $tokens = [
+                '--simplify-embed-bg' => $p['bg'], '--simplify-embed-card' => $palette['--ps-surface'], '--simplify-embed-ink' => $p['ink'],
+                '--simplify-embed-muted' => $p['muted'], '--simplify-embed-line' => $palette['--ps-line'], '--simplify-embed-soft' => $p['raised'],
+                '--simplify-embed-ok' => $p['ok'], '--simplify-embed-warn' => $p['warn'], '--simplify-embed-bad' => $p['danger'],
+                '--simplify-embed-accent' => $p['accent'], '--simplify-embed-radius' => $t['radius'].'px',
+            ] + ($font === null ? [] : ['--simplify-embed-font' => $font]);
+            $paint = self::paint($t, $images, $mode, ':root:root', ':root:root');
+            $css .= $media.'{'.self::rule(':root:root', $tokens)
+                .':root:root{background:'.$p['bg'].' !important}'.$paint
+                .':root:root body,:root:root h1{color:'.$p['ink'].' !important}:root:root .page-intro{color:'.$p['muted'].' !important}}';
+        }
+
+        return $css.Effects::css($t);
     }
 
     /** @param  array<int, array{name: string, url: string, format: string}>  $uploaded */

@@ -23,7 +23,7 @@ final class Store
     /** @var list<array{id: int, name: string, data: array<string, mixed>}>|null */
     private static ?array $themes = null;
 
-    /** @var array{default: ?int, pick: bool}|null */
+    /** @var array{default: ?int, pick: bool, status: bool}|null */
     private static ?array $settings = null;
 
     /** @return list<array{id: int, name: string, data: array<string, mixed>}> */
@@ -80,21 +80,25 @@ final class Store
         self::flush();
     }
 
-    /** @return array{default: ?int, pick: bool} */
+    /** @return array{default: ?int, pick: bool, status: bool} */
     public static function settings(): array
     {
         if (self::$settings === null) {
             $row = DB::table(self::SETTINGS)->where('id', 1)->first();
-            self::$settings = ['default' => $row?->default_theme_id !== null ? (int) $row->default_theme_id : null, 'pick' => (bool) ($row->let_people_pick ?? false)];
+            self::$settings = ['default' => $row?->default_theme_id !== null ? (int) $row->default_theme_id : null, 'pick' => (bool) ($row->let_people_pick ?? false), 'status' => (bool) ($row->status_page ?? false)];
         }
 
         return self::$settings;
     }
 
-    /** $default null is Simplify's own look. */
-    public static function saveSettings(?int $default, bool $pick): void
+    /** $default null is Simplify's own look. $status null keeps whether the status page wears the default theme. */
+    public static function saveSettings(?int $default, bool $pick, ?bool $status = null): void
     {
-        DB::table(self::SETTINGS)->updateOrInsert(['id' => 1], ['default_theme_id' => $default, 'let_people_pick' => $pick, 'updated_at' => now()]);
+        $row = ['default_theme_id' => $default, 'let_people_pick' => $pick, 'updated_at' => now()];
+        if ($status !== null) {
+            $row['status_page'] = $status;
+        }
+        DB::table(self::SETTINGS)->updateOrInsert(['id' => 1], $row);
         self::flush();
     }
 

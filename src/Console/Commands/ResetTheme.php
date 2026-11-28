@@ -16,7 +16,7 @@ final class ResetTheme extends Command
 
     public function handle(): int
     {
-        Store::saveSettings(null, false);
+        Store::saveSettings(null, false, false);
         $this->info("Everyone sees Simplify's own look again. Your themes are kept.");
 
         return self::SUCCESS;

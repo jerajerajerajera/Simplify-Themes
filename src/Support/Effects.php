@@ -51,13 +51,16 @@ final class Effects
         ];
     }
 
-    /** The canvas and the script for a page; nothing without an effect. @param array<string, mixed> $t a clean theme */
-    public static function tag(array $t, string $scriptUrl): string
+    /**
+     * The canvas and the script for a page; nothing without an effect. $media: light and dark follow the visitor's
+     * device instead of the panel's dark class (the status page). @param array<string, mixed> $t a clean theme
+     */
+    public static function tag(array $t, string $scriptUrl, bool $media = false): string
     {
         if ($t['effect'] === 'none') {
             return '';
         }
-        $json = json_encode(self::settings($t), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
+        $json = json_encode(self::settings($t) + ($media ? ['media' => true] : []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
 
         $attr = fn (string $value) => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 

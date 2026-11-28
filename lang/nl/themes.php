@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Dit thema',
     'let_people_pick' => 'Laat mensen kiezen',
     'let_people_pick_help' => 'Iedereen kan zelf een van deze thema\'s kiezen onder Mijn thema in het accountmenu.',
+    'status_page' => 'Statuspagina',
+    'status_page_help' => 'Gebruik het standaardthema op de openbare statuspagina (/status en het eigen adres). Titel, logo, intro en je eigen CSS blijven zoals ze zijn.',
     'new' => 'Nieuw thema',
     'new_name' => 'Nieuw thema',
     'duplicate' => 'Dupliceren',

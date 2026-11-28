@@ -29,6 +29,8 @@ return [
     'this_theme' => 'このテーマ',
     'let_people_pick' => '各自で選べるようにする',
     'let_people_pick_help' => '全員がアカウントメニューの「マイテーマ」でこれらのテーマから自分用に選べます。',
+    'status_page' => 'ステータスページ',
+    'status_page_help' => '公開ステータスページ（/status と専用アドレス）で既定のテーマを使います。タイトル、ロゴ、紹介文、独自の CSS はそのままです。',
     'new' => '新しいテーマ',
     'new_name' => '新しいテーマ',
     'duplicate' => '複製',

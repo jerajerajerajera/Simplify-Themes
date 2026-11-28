@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Bu tema',
     'let_people_pick' => 'Herkes seçebilsin',
     'let_people_pick_help' => 'Herkes hesap menüsündeki Temam bölümünde bu temalardan birini kendisi için seçebilir.',
+    'status_page' => 'Durum sayfası',
+    'status_page_help' => 'Herkese açık durum sayfasında varsayılan temayı kullan (/status ve kendi adresi). Başlık, logo, giriş ve kendi CSS’in olduğu gibi kalır.',
     'new' => 'Yeni tema',
     'new_name' => 'Yeni tema',
     'duplicate' => 'Çoğalt',

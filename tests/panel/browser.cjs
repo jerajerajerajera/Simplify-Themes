@@ -232,6 +232,28 @@ async function run(browser, viewport, scheme, saves) {
       await settle(1000);
       const kept = await page.evaluate(() => ({ had: !!window.fxBefore, same: !!window.fxBefore && window.fxBefore === document.getElementById('simplify-themes-fx'), url: location.pathname }));
       say('a menu click keeps the moving background running', kept.had && kept.same && !kept.url.includes('simplify-themes'), { ...kept, href });
+      // TH-S1: with Status page on, the public status page wears the default theme, light or dark as the device prefers.
+      await goto('/admin/simplify-themes');
+      const toggle = page.locator('input[x-model="data.status"]');
+      if (await toggle.count() === 1) {
+        if (!(await toggle.isChecked())) {
+          await toggle.locator('xpath=..').click();
+          await page.getByRole('button', { name: 'Save', exact: true }).first().click();
+          await page.locator(':text("Saved"):visible').first().waitFor({ timeout: 10000 }).catch(() => {});
+        }
+        await goto('/status');
+        await page.locator('#simplify-servers').waitFor({ timeout: 8000 }).catch(() => {});
+        await sleep(1200);
+        const sp = await page.evaluate(() => ({
+          style: !!document.querySelector('style#simplify-themes'),
+          card: getComputedStyle(document.documentElement).getPropertyValue('--simplify-embed-card').trim(),
+          gradient: getComputedStyle(document.documentElement).backgroundImage.includes('gradient'),
+          h1: getComputedStyle(document.querySelector('h1') || document.body).color,
+        }));
+        say('the status page wears the default theme', sp.style && sp.card !== '' && sp.gradient, sp);
+        say('the effect moves behind the status page', await drawn('#simplify-themes-fx'));
+        await shot('status-page');
+      } else say('the Status page switch shows with the status page hook', false, { error: 'no switch' });
     }
     // The ready-made default (checks.yml) on the pages everyone sees.
     await goto('/');

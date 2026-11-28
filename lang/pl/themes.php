@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Ten motyw',
     'let_people_pick' => 'Pozwól wybierać',
     'let_people_pick_help' => 'Każdy może wybrać jeden z tych motywów dla siebie w Mój motyw w menu konta.',
+    'status_page' => 'Strona statusu',
+    'status_page_help' => 'Użyj domyślnego motywu na publicznej stronie statusu (/status i jej własny adres). Tytuł, logo, wstęp i Twój własny CSS pozostają bez zmian.',
     'new' => 'Nowy motyw',
     'new_name' => 'Nowy motyw',
     'duplicate' => 'Duplikuj',

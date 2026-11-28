@@ -29,6 +29,8 @@ return [
     'this_theme' => '此主题',
     'let_people_pick' => '允许自选',
     'let_people_pick_help' => '每个人都可以在账户菜单的“我的主题”中为自己选择其中一个主题。',
+    'status_page' => '状态页',
+    'status_page_help' => '在公开状态页（/status 及其独立地址）上使用默认主题。标题、徽标、简介和你自己的 CSS 保持不变。',
     'new' => '新主题',
     'new_name' => '新主题',
     'duplicate' => '复制',

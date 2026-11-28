@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Tema ini',
     'let_people_pick' => 'Biarkan orang memilih',
     'let_people_pick_help' => 'Semua orang dapat memilih salah satu tema ini untuk dirinya di Tema saya pada menu akun.',
+    'status_page' => 'Halaman status',
+    'status_page_help' => 'Gunakan tema bawaan di halaman status publik (/status dan alamatnya sendiri). Judul, logo, intro, dan CSS milikmu tetap seperti semula.',
     'new' => 'Tema baru',
     'new_name' => 'Tema baru',
     'duplicate' => 'Duplikat',

@@ -29,6 +29,8 @@ return [
     'this_theme' => 'Ez a téma',
     'let_people_pick' => 'Választhassanak',
     'let_people_pick_help' => 'Mindenki választhat magának egyet ezek közül a fiókmenü Saját téma pontjában.',
+    'status_page' => 'Állapotoldal',
+    'status_page_help' => 'Az alapértelmezett téma használata a nyilvános állapotoldalon (/status és a saját címe). A cím, a logó, a bevezető és a saját CSS-ed változatlan marad.',
     'new' => 'Új téma',
     'new_name' => 'Új téma',
     'duplicate' => 'Másolat készítése',

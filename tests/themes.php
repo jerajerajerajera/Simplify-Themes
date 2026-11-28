@@ -172,6 +172,21 @@ foreach (Theme::CHOICES['effect'] as $type) {
 }
 check(str_contains($js, 'prefers-reduced-motion') && str_contains($js, 'visibilitychange') && ! str_contains($js, 'ev'.'al(') && ! preg_match('#https?://#', $js), 'the script respects less motion, pauses when hidden and loads nothing else');
 
+// TH-S1: the status page wears the default theme. It has no dark class, so both modes go by the visitor's device;
+// the list (embed.js) reads --simplify-embed-*.
+$ocean = $clean(Presets::ready()['Ocean night']);
+$status = Css::status($ocean, $url, [], []);
+$darkAt = strpos($status, '@media (prefers-color-scheme:dark){');
+check($darkAt !== false && str_contains(substr($status, $darkAt), '--simplify-embed-bg:'.$ocean['dark']['bg'])
+    && str_contains(substr($status, 0, $darkAt), '--simplify-embed-bg:'.$ocean['light']['bg']), 'the status page gets the list tokens for light and, by the device, for dark');
+check(str_contains($status, '--simplify-embed-card:') && str_contains($status, '--simplify-embed-accent:'.$ocean['light']['accent']) && str_contains($status, '--simplify-embed-radius:'.$ocean['radius'].'px'), 'cards, accent and corners reach the list');
+check(! str_contains($status, '.dark') && ! str_contains($status, '--ps-') && ! str_contains($status, '<'), 'the status page block uses no panel classes, no panel tokens and no markup');
+check(! preg_match('#url\("https?://#', $status) && str_contains($status, '/simplify-themes/font/'), 'status page fonts come from the panel itself');
+$statusGrad = Css::status($clean(['bg' => 'gradient', 'bg_dark' => 'image', 'image' => 3]), $url, [], [3 => $img]);
+check(preg_match('/@media not all and \(prefers-color-scheme:dark\)\{[^@]*:root:root\{background:linear-gradient\(/', $statusGrad) === 1
+    && preg_match('/@media \(prefers-color-scheme:dark\)\{[^@]*:root:root::before\{[^}]*url\("'.preg_quote($img, '/').'"\)/', $statusGrad) === 1, 'the status page gets the gradient in light and the picture in dark');
+check(str_contains(Effects::tag($fx, '/e.js', true), '&quot;media&quot;:true') && ! str_contains(Effects::tag($fx, '/e.js'), 'media'), 'on the status page the effect follows the device, in the panel the dark class');
+
 if ($failures) {
     echo count($failures)." checks failed\n";
     exit(1);

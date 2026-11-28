@@ -31,6 +31,9 @@ shadows, see-through cards and the console.
 - **Shapes & console** (with Simplify): corners, spacing, shadows, lines, console colours and console font.
 - **Let people pick**: when you turn it on, everyone can choose one of the themes for themselves under **My theme** in
   their account menu. It is off by default.
+- **Status page** (with a Simplify that offers add-on API 11): the public status page (/status and its own address) wears
+  the default theme: colours, background, fonts and effect, light or dark as the visitor's device prefers. Title, logo,
+  intro and your own CSS from Website › Status page stay as they are. It is off by default.
 
 ## Uploads
 

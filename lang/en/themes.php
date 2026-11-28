@@ -29,6 +29,8 @@ return [
     'this_theme' => 'This theme',
     'let_people_pick' => 'Let people pick',
     'let_people_pick_help' => 'Everyone can choose one of these themes for themselves under My theme in their account menu.',
+    'status_page' => 'Status page',
+    'status_page_help' => 'Use the default theme on the public status page (/status and its own address). Title, logo, intro and your own CSS stay as they are.',
     'new' => 'New theme',
     'new_name' => 'New theme',
     'duplicate' => 'Duplicate',

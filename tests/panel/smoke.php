@@ -24,6 +24,7 @@ use Simplify\Themes\Filament\Admin\Pages\Themes;
 use Simplify\Themes\Filament\App\Pages\MyTheme;
 use Simplify\Themes\Support\Files;
 use Simplify\Themes\Support\Fonts;
+use Simplify\Themes\Support\StatusPage;
 use Simplify\Themes\Support\Store;
 use Simplify\Themes\ThemesAddon;
 
@@ -282,10 +283,24 @@ step('the add-on is tagged and offers My theme while people may pick', function 
     Store::saveSettings(Store::settings()['default'], false);
 });
 
+step('the status page wears the default theme only while Status page is on', function () use ($admin) {
+    $before = Store::settings()['default'];
+    $default = $before ?? (int) DB::table(Store::THEMES)->value('id');
+    Store::saveSettings($default, false);
+    must(StatusPage::head() === '', 'the status page is themed while the switch is off');
+    Store::saveSettings($default, false, true);
+    $head = StatusPage::head();
+    must(str_contains($head, '--simplify-embed-bg:') && str_contains($head, '@media (prefers-color-scheme:dark)'), 'the status page does not get the default theme');
+    must(method_exists(ThemesAddon::class, 'statusPageHead') && app(ThemesAddon::class)->statusPageHead() === $head, 'the add-on does not hand the theme to the status page');
+    $html = visit($admin, Themes::getUrl(panel: 'admin'))->getContent();
+    must(str_contains($html, 'data.status') === StatusPage::supported(), 'the Status page switch shows on a core without the status page hook, or is missing with it');
+    Store::saveSettings($before, false, false);
+});
+
 step('simplify-themes:reset brings back Simplify\'s look for everyone', function () {
     Artisan::call('simplify-themes:reset');
     Store::flush();
-    must(Store::settings() === ['default' => null, 'pick' => false] && DB::table(Store::THEMES)->count() > 0, 'reset did not work or lost themes');
+    must(Store::settings() === ['default' => null, 'pick' => false, 'status' => false] && DB::table(Store::THEMES)->count() > 0, 'reset did not work or lost themes');
 });
 
 if ($simplify) {
