@@ -23,7 +23,7 @@ final class Store
     /** @var list<array{id: int, name: string, data: array<string, mixed>}>|null */
     private static ?array $themes = null;
 
-    /** @var array{default: ?int, pick: bool}|null */
+    /** @var array{default: ?int, pick: bool, status: bool}|null */
     private static ?array $settings = null;
 
     /** @return list<array{id: int, name: string, data: array<string, mixed>}> */
@@ -80,7 +80,7 @@ final class Store
         self::flush();
     }
 
-    /** @return array{default: ?int, pick: bool} */
+    /** @return array{default: ?int, pick: bool, status: bool} */
     public static function settings(): array
     {
         if (self::$settings === null) {
